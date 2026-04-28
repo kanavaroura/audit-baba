@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Audit Baba · हर गिनती का हिसाब</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Poppins:wght@300;400;500;600;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          mirch: '#E63946', mirchDark: '#C92A37', mirchSoft: '#FBE1E3',
+          haldi: '#FFCE3D', haldiSoft: '#FFF1B5',
+          aam:   '#6CA653', aamDark: '#4F8A3D', aamSoft: '#E1F0D8',
+          imli:  '#4B2E2E', imliSoft: '#6B4848', imliFaint: '#A18B8B',
+          papad: '#FAF9F6', papadDeep: '#F1EEE6', cream: '#FFF6E6',
+        },
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+          body:    ['Poppins', 'system-ui', 'sans-serif'],
+          desi:    ['"Baloo 2"', 'system-ui', 'sans-serif'],
+        },
+      }
+    }
+  };
+</script>
+<style>
+  [x-cloak] { display: none !important; }
+  html, body { background: #F1EEE6; }
+  body {
+    font-family: 'Poppins', system-ui, sans-serif;
+    color: #4B2E2E;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display { font-family: 'Bricolage Grotesque', system-ui, sans-serif; letter-spacing: -0.02em; }
+  .desi    { font-family: 'Baloo 2', system-ui, sans-serif; }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* Aroura badge */
+  .badge {
+    background: #E63946; color: white;
+    border-radius: 14px 14px 18px 18px / 14px 14px 24px 24px;
+    padding: 6px 14px; border: 2px solid white;
+    box-shadow: 0 0 0 2px #E63946;
+    text-align: center; font-family: 'Bricolage Grotesque'; line-height: 1;
+  }
+
+  /* Nav item — sidebar */
+  .nav-item { @apply flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-imliSoft font-medium text-sm cursor-pointer transition; }
+  .nav-item:hover { @apply bg-papadDeep text-imli; }
+  .nav-item.active { background: #E63946; color: #FAF9F6; }
+  .nav-item.active .nav-count { background: rgba(255,255,255,.18); color: white; }
+  .nav-icon { width: 20px; height: 20px; flex-shrink: 0; }
+  .nav-count { @apply ml-auto text-[11px] tabular bg-papadDeep text-imliSoft px-1.5 py-0.5 rounded-md font-semibold; }
+
+  /* Bottom nav (mobile) */
+  .bnav { display: flex; align-items: center; justify-content: center; gap: 6px; flex: 1; padding: 10px 4px; color: #6B4848; font-size: 10.5px; font-weight: 600; flex-direction: column; }
+  .bnav.active { color: #E63946; }
+  .bnav.active .bnav-icon { background: #E63946; color: white; }
+  .bnav-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; transition: background .15s; }
+
+  /* Cards */
+  .card { @apply bg-white rounded-2xl border-2 border-imli/10 p-5; box-shadow: 0 2px 6px rgba(75,46,46,0.04); }
+  .card-jar { @apply bg-white p-5; border-radius: 24px; border: 2px solid rgba(75,46,46,0.10); box-shadow: 0 8px 24px -8px rgba(75,46,46,.12); }
+
+  /* Buttons */
+  .btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition disabled:opacity-50 disabled:cursor-not-allowed; }
+  .btn-primary { background: #E63946; color: white; padding: 10px 18px; border-radius: 14px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 0 -1px #C92A37; transition: transform .12s, box-shadow .12s; }
+  .btn-primary:hover { background: #D32A37; }
+  .btn-primary:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 -1px #C92A37; }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-secondary { @apply btn bg-white border-2 border-imli/15 text-imli hover:border-imli/30 hover:bg-papadDeep; }
+  .btn-success { background: #6CA653; color: white; padding: 10px 18px; border-radius: 14px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 0 -1px #4F8A3D; transition: transform .12s, box-shadow .12s; }
+  .btn-success:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 -1px #4F8A3D; }
+  .btn-danger { @apply btn bg-mirchSoft border-2 border-mirch/30 text-mirch hover:bg-mirch hover:text-white; }
+  .btn-ghost { @apply inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-imliSoft hover:text-imli hover:bg-papadDeep transition; }
+
+  /* Inputs */
+  .input { @apply w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-imli/15 text-sm text-imli placeholder:text-imliFaint focus:outline-none focus:border-mirch transition; }
+  .input:disabled { background: #F1EEE6; opacity: .6; }
+  .label { @apply block text-[11px] font-bold text-imliSoft uppercase tracking-wider mb-1.5; font-family: 'Baloo 2'; letter-spacing: 0.06em; }
+
+  /* Table */
+  .table-th { @apply text-left text-[10px] font-bold text-imliSoft uppercase tracking-wider px-4 py-3 bg-papadDeep; font-family: 'Baloo 2'; letter-spacing: 0.08em; }
+  .table-td { @apply px-4 py-3 text-sm border-t border-imli/8; }
+  tbody tr:hover { background: rgba(255,206,61,0.06); }
+
+  /* Pills */
+  .pill { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold; letter-spacing: 0.02em; }
+  .pill-draft       { background:#F1EEE6; color:#6B4848; }
+  .pill-sent        { background:#FFF1B5; color:#8B6914; }
+  .pill-received    { background:#E1F0D8; color:#4F8A3D; }
+  .pill-in_progress { background:#FFF1B5; color:#8B6914; }
+  .pill-submitted   { background:#FBE1E3; color:#C92A37; }
+  .pill-finalized   { background:#E1F0D8; color:#4F8A3D; }
+  .pill-disputed    { background:#FBE1E3; color:#C92A37; }
+  .pill-active      { background:#E1F0D8; color:#4F8A3D; }
+  .pill-inactive    { background:#F1EEE6; color:#6B4848; }
+
+  /* Caption */
+  .caption { font-family: 'Baloo 2'; font-size: 11px; color: #6B4848; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700; }
+
+  /* Decorative dot grid */
+  .dotgrid { background-image: radial-gradient(currentColor 1.2px, transparent 1.5px); background-size: 12px 12px; opacity: 0.35; }
+
+  /* SVG icon helper */
+  svg.i { width: 18px; height: 18px; stroke-width: 2; }
+
+  /* Audit-capture: SKU big counter card */
+  .counter-btn {
+    width: 52px; height: 52px; border-radius: 16px;
+    background: white; border: 2px solid #4B2E2E;
+    font-family: 'Bricolage Grotesque'; font-size: 24px; font-weight: 700;
+    color: #4B2E2E; display: grid; place-items: center;
+    box-shadow: 0 3px 0 0 #4B2E2E; user-select: none;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .counter-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 0 #4B2E2E; }
+  .counter-btn.minus { color: #E63946; border-color: #E63946; box-shadow: 0 3px 0 0 #E63946; }
+  .counter-btn.plus  { color: #6CA653; border-color: #6CA653; box-shadow: 0 3px 0 0 #6CA653; }
+
+  .stat-mini { @apply rounded-xl bg-papadDeep text-center py-2 px-1; }
+  .stat-mini .lbl { @apply text-[10px] caption !text-imliSoft; }
+  .stat-mini .val { @apply display font-extrabold text-imli tabular text-base leading-none mt-1; }
+
+  /* Variance pulse */
+  .var-callout {
+    @apply flex items-center gap-3 rounded-2xl p-3 mt-3 border-2;
+  }
+  .var-short { background: rgba(230,57,70,0.08); border-color: rgba(230,57,70,0.30); color:#C92A37; }
+  .var-over  { background: rgba(255,206,61,0.20); border-color: rgba(255,206,61,0.55); color:#8B6914; }
+  .var-ok    { background: rgba(108,166,83,0.10); border-color: rgba(108,166,83,0.35); color:#4F8A3D; }
+
+  /* Sticky footer running total bar */
+  .running-bar {
+    position: sticky; bottom: 0;
+    background: #FAF9F6;
+    border-top: 2px solid rgba(75,46,46,0.12);
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    z-index: 20;
+    margin-bottom: -1rem;
+  }
+
+  /* Page hero header */
+  .hero-head {
+    position: relative; overflow: hidden;
+    background: #FAF9F6;
+    border-radius: 28px;
+    border: 2px solid rgba(75,46,46,0.10);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .hero-head .star {
+    position: absolute; top: 12px; right: 16px;
+    color: #FFCE3D; pointer-events: none;
+  }
+  .hero-head h1 { @apply display font-extrabold text-imli leading-none; font-size: clamp(28px, 4.5vw, 44px); }
+  .hero-head .sub { @apply desi text-aamDark font-bold mt-1; font-size: 16px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: rgba(75,46,46,.20); border-radius: 999px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  /* Squiggle */
+  .squiggle {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 12'><path d='M0 6 Q 10 0, 20 6 T 40 6 T 60 6 T 80 6' stroke='%23E63946' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: repeat-x; background-position: center; height: 12px;
+  }
+
+  /* Layout safe areas */
+  main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  @media (min-width: 768px) { main { padding-bottom: 2rem; } }
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<script src="seed.js"></script>
+<script src="app.js"></script>
+</head>
+<body x-data="app()" x-init="init()" x-cloak class="min-h-screen">
+
+<!-- ============= TOAST ============= -->
+<div x-show="toast" x-transition role="status" aria-live="polite"
+     class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-imli text-papad px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold flex items-center gap-2">
+  <svg class="i text-haldi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+  <span x-text="toast"></span>
+</div>
+
+<!-- ============= MOBILE TOP BAR ============= -->
+<div class="md:hidden flex items-center justify-between bg-papad border-b-2 border-imli/10 px-4 py-3 sticky top-0 z-30">
+  <button @click="sidebarOpen = !sidebarOpen" class="w-10 h-10 -ml-1 grid place-items-center rounded-xl hover:bg-papadDeep" aria-label="Open menu">
+    <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+  </button>
+  <div class="flex items-center gap-2">
+    <div class="badge !text-[7px] !px-2 !py-1">
+      <div style="font-size:5px; letter-spacing:.18em">— LUCKNOW'S —</div>
+      <div class="display font-bold" style="font-size:11px">AROURA</div>
+    </div>
+    <div class="display font-extrabold text-imli text-base">Audit Baba<span class="text-haldi">*</span></div>
+  </div>
+  <div class="w-10"></div>
+</div>
+
+<!-- Sidebar overlay (mobile) -->
+<div x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen=false" class="md:hidden fixed inset-0 bg-imli/60 z-30"></div>
+
+<div class="md:flex">
+
+  <!-- ============= SIDEBAR ============= -->
+  <aside :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}"
+         class="md:translate-x-0 fixed md:sticky top-0 left-0 h-screen w-72 bg-papad border-r-2 border-imli/10 z-40 transition-transform overflow-y-auto">
+    <div class="p-5 border-b-2 border-imli/10 relative overflow-hidden">
+      <div class="absolute -top-6 -right-4 w-24 h-24 dotgrid text-mirch pointer-events-none"></div>
+      <div class="flex items-center gap-3 relative">
+        <div class="w-14 h-14 rounded-full bg-mirch grid place-items-center shrink-0">
+          <div class="badge !text-[6px] !px-1.5 !py-1 !shadow-none !border-mirch" style="box-shadow: 0 0 0 2px white;">
+            <div style="font-size:5px;letter-spacing:.18em">LUCKNOW'S</div>
+            <div class="display font-bold" style="font-size:8px">AROURA</div>
+            <div style="font-size:5px;letter-spacing:.18em">SINCE 1944</div>
+          </div>
+        </div>
+        <div>
+          <div class="display font-extrabold text-imli text-xl leading-none">Audit Baba<span class="text-haldi">*</span></div>
+          <div class="desi text-aamDark font-bold text-sm mt-1">हर गिनती का हिसाब</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="p-3 space-y-1">
+      <div @click="go('dashboard')" :class="{'active': view==='dashboard'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        <span>Dashboard</span>
+      </div>
+      <div @click="go('audits')" :class="{'active': ['audits','audit-capture'].includes(view)}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18M9 14h6M9 18h3"/></svg>
+        <span>Audits</span>
+      </div>
+      <div @click="go('outlets')" :class="{'active': ['outlets','outlet-detail'].includes(view)}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        <span>Outlets</span>
+        <span class="nav-count" x-text="outlets.length"></span>
+      </div>
+      <div @click="go('skus')" :class="{'active': view==='skus'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04M12 22V12"/></svg>
+        <span>SKUs</span>
+        <span class="nav-count" x-text="skus.length"></span>
+      </div>
+      <div @click="go('dispatches')" :class="{'active': view==='dispatches'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        <span>Dispatches</span>
+      </div>
+      <div @click="go('pos')" :class="{'active': view==='pos'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        <span>POS uploads</span>
+      </div>
+      <div @click="go('settings')" :class="{'active': view==='settings'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Settings</span>
+      </div>
+    </nav>
+
+    <div class="absolute bottom-0 inset-x-0 p-4 border-t-2 border-imli/10 bg-papadDeep/50">
+      <div class="caption !text-imliSoft">Aroura Achar</div>
+      <div class="text-xs text-imliSoft mt-0.5">Internal tool · Since 2026</div>
+    </div>
+  </aside>
+
+  <!-- ============= MAIN ============= -->
+  <main class="flex-1 min-w-0 p-4 md:p-8 max-w-6xl">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section x-show="view==='dashboard'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="caption">Namaste, Kanav</div>
+        <h1>Aaj ka <span class="text-mirch">hisaab.</span></h1>
+        <p class="sub">Variance overview across your outlets.</p>
+      </div>
+
+      <div x-show="!outlets.length || !audits.length" class="card mb-6 !bg-haldi/15 !border-haldi border-2">
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-haldi grid place-items-center shrink-0">
+            <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+          </div>
+          <div class="flex-1">
+            <div class="display font-bold text-imli text-lg">Shuru karte hain</div>
+            <p class="text-sm text-imliSoft mt-1">No data yet. Try the demo seed to see how the app works end-to-end.</p>
+            <div class="flex gap-2 flex-wrap mt-3">
+              <button class="btn-primary" @click="loadDemoData()">
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                Load demo data
+              </button>
+              <button class="btn-secondary" @click="go('outlets')">+ Add outlet</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <!-- Big shortfall card -->
+        <div class="sm:col-span-3 lg:col-span-1 rounded-3xl bg-mirch text-white p-5 relative overflow-hidden" style="box-shadow: 0 12px 32px -10px rgba(230,57,70,.45);">
+          <div class="absolute -top-4 -right-4 w-32 h-32 dotgrid text-white/40 pointer-events-none"></div>
+          <svg class="absolute top-3 right-3 text-haldi i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+          <div class="caption !text-haldi">Shortfall this month</div>
+          <div class="display font-extrabold tabular leading-none mt-2" style="font-size: 44px;" x-text="fmtINR(Math.abs(dashboardStats.totalShortfall))"></div>
+          <div class="text-xs text-white/85 mt-3" x-text="dashboardStats.auditsThisMonth + ' audits'"></div>
+        </div>
+
+        <div class="card-jar">
+          <div class="caption">Active outlets</div>
+          <div class="display font-extrabold text-imli tabular leading-none mt-2" style="font-size: 40px;" x-text="outlets.filter(o => o.status === 'active').length"></div>
+          <div class="text-xs text-imliSoft mt-3">across all locations</div>
+        </div>
+
+        <div class="card-jar">
+          <div class="caption">SKUs tracked</div>
+          <div class="display font-extrabold text-imli tabular leading-none mt-2" style="font-size: 40px;" x-text="skus.filter(s => s.active).length"></div>
+          <div class="text-xs text-imliSoft mt-3" x-text="categories.length + ' categories'"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+        <div class="card-jar">
+          <div class="flex items-center justify-between mb-4">
+            <div class="caption">Outlet shortfall · this month</div>
+            <span class="chip"></span>
+          </div>
+          <template x-if="dashboardStats.outletShortfalls.length">
+            <div class="space-y-4">
+              <template x-for="row in dashboardStats.outletShortfalls" :key="row.outlet?.id">
+                <div>
+                  <div class="flex justify-between text-sm mb-1.5">
+                    <span x-text="row.outlet?.name || '(deleted outlet)'" class="font-semibold text-imli"></span>
+                    <span class="text-mirch font-bold tabular" x-text="fmtINR(Math.abs(row.value))"></span>
+                  </div>
+                  <div class="bg-papadDeep rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-mirch h-full rounded-full transition-all"
+                         :style="`width: ${Math.min(100, Math.abs(row.value) / Math.max(1, Math.abs(dashboardStats.outletShortfalls[0].value)) * 100)}%`"></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <p x-show="!dashboardStats.outletShortfalls.length" class="text-sm text-imliFaint italic">No audits this month yet.</p>
+        </div>
+
+        <div class="card-jar">
+          <div class="caption mb-4">Top loss SKUs · all time</div>
+          <template x-if="dashboardStats.topLossSkus.length">
+            <div>
+              <template x-for="(row, idx) in dashboardStats.topLossSkus" :key="row.sku?.id">
+                <div class="flex items-center gap-3 py-2.5 border-b border-imli/8 last:border-0">
+                  <div class="display font-extrabold text-mirch tabular w-7" :class="idx < 3 ? '' : 'opacity-40'" x-text="idx + 1"></div>
+                  <div class="flex-1 min-w-0 truncate font-semibold text-imli text-sm" x-text="row.sku?.item_name"></div>
+                  <div class="text-mirch font-bold tabular text-sm" x-text="fmtINR(Math.abs(row.value))"></div>
+                </div>
+              </template>
+            </div>
+          </template>
+          <p x-show="!dashboardStats.topLossSkus.length" class="text-sm text-imliFaint italic">No variance data yet.</p>
+        </div>
+      </div>
+
+      <div class="card-jar !p-0 overflow-hidden">
+        <div class="p-5 pb-3 flex items-center justify-between">
+          <div class="caption">Recent audits</div>
+          <button class="btn-ghost" @click="go('audits')">See all
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+          </button>
+        </div>
+        <template x-if="dashboardStats.recentAudits.length">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead><tr><th class="table-th">Outlet</th><th class="table-th">Date</th><th class="table-th">Status</th><th class="table-th text-right">Shortfall</th></tr></thead>
+              <tbody>
+                <template x-for="a in dashboardStats.recentAudits" :key="a.id">
+                  <tr class="cursor-pointer" @click="auditCaptureId=a.id; go('audit-capture')">
+                    <td class="table-td font-semibold text-imli" x-text="outletById(a.outlet_id)?.name || '(deleted)'"></td>
+                    <td class="table-td text-imliSoft tabular" x-text="a.audit_date"></td>
+                    <td class="table-td"><span class="pill" :class="'pill-' + a.status" x-text="a.status.replace('_',' ')"></span></td>
+                    <td class="table-td text-right text-mirch font-bold tabular" x-text="fmtINR(Math.abs(auditTotals(a.id).shortfall))"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </template>
+        <p x-show="!dashboardStats.recentAudits.length" class="text-sm text-imliFaint italic px-5 pb-5">No audits yet.</p>
+      </div>
+    </section>
+
+    <!-- ==================== AUDITS ==================== -->
+    <section x-show="view==='audits'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div class="caption">Counting day</div>
+            <h1>Audits</h1>
+            <p class="sub">Saath mein gintee karte hain.</p>
+          </div>
+          <button class="btn-primary" @click="newAuditDraft()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            New audit
+          </button>
+        </div>
+      </div>
+
+      <div x-show="auditDraft" class="card-jar mb-6 !border-mirch border-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-mirch grid place-items-center text-white">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div>
+            <div class="display font-bold text-imli text-lg">Start a new audit</div>
+            <div class="caption">Step 1 — set up</div>
+          </div>
+        </div>
+        <template x-if="auditDraft">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="label">Outlet</label>
+              <select class="input" x-model="auditDraft.outlet_id" @change="onDraftOutletChange()">
+                <template x-for="o in outlets" :key="o.id"><option :value="o.id" x-text="o.name"></option></template>
+              </select>
+            </div>
+            <div>
+              <label class="label">Audit date</label>
+              <input type="date" class="input" x-model="auditDraft.audit_date">
+            </div>
+            <div>
+              <label class="label">Period start <span class="text-imliFaint normal-case font-normal">— last finalized audit, or outlet start</span></label>
+              <input type="date" class="input" x-model="auditDraft.period_start">
+            </div>
+            <div></div>
+            <div>
+              <label class="label">HQ auditor</label>
+              <input type="text" class="input" x-model="auditDraft.hq_auditor" placeholder="Aapka naam">
+            </div>
+            <div>
+              <label class="label">Outlet witness</label>
+              <input type="text" class="input" x-model="auditDraft.outlet_witness" placeholder="Outlet manager">
+            </div>
+            <div class="md:col-span-2 flex gap-3 mt-2">
+              <button class="btn-primary" @click="startAudit()">
+                Start counting
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </button>
+              <button class="btn-secondary" @click="auditDraft = null">Cancel</button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="card-jar !p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead><tr>
+              <th class="table-th">Outlet</th><th class="table-th">Period</th><th class="table-th">Date</th>
+              <th class="table-th">Counted</th><th class="table-th text-right">Shortfall</th>
+              <th class="table-th">Status</th><th class="table-th"></th>
+            </tr></thead>
+            <tbody>
+              <template x-for="a in [...audits].sort((x,y) => y.audit_date.localeCompare(x.audit_date))" :key="a.id">
+                <tr>
+                  <td class="table-td font-semibold text-imli" x-text="outletById(a.outlet_id)?.name || '(deleted)'"></td>
+                  <td class="table-td text-xs text-imliSoft tabular" x-text="a.period_start"></td>
+                  <td class="table-td text-imliSoft tabular" x-text="a.audit_date"></td>
+                  <td class="table-td text-sm tabular" x-text="auditTotals(a.id).counted + '/' + auditTotals(a.id).total"></td>
+                  <td class="table-td text-right text-mirch font-bold tabular" x-text="fmtINR(Math.abs(auditTotals(a.id).shortfall))"></td>
+                  <td class="table-td"><span class="pill" :class="'pill-' + a.status" x-text="a.status.replace('_',' ')"></span></td>
+                  <td class="table-td">
+                    <div class="flex gap-1.5 justify-end">
+                      <button class="btn-ghost !text-mirch" @click="auditCaptureId=a.id; go('audit-capture')">Open</button>
+                      <button class="btn-ghost" @click="exportAuditCsv(a.id)">CSV</button>
+                      <button x-show="a.status==='submitted'" class="btn-ghost !text-aamDark" @click="finalizeAudit(a.id)">Finalize</button>
+                      <button class="btn-ghost !text-mirch" @click="deleteAudit(a.id)" aria-label="Delete">×</button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+              <tr x-show="!audits.length"><td colspan="7" class="table-td text-center text-imliFaint py-12 italic">No audits yet. Start one above.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== AUDIT CAPTURE (HERO) ==================== -->
+    <section x-show="view==='audit-capture' && auditCaptureId">
+      <button class="btn-ghost mb-3" @click="go('audits')">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to audits
+      </button>
+
+      <template x-if="currentCaptureAudit">
+        <div>
+          <!-- Audit context header -->
+          <div class="rounded-3xl bg-imli text-papad p-5 mb-4 relative overflow-hidden">
+            <div class="absolute -top-4 -right-4 w-32 h-32 dotgrid text-haldi/30 pointer-events-none"></div>
+            <svg class="absolute top-4 right-5 text-haldi i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+
+            <div class="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <div class="caption !text-haldi" x-text="currentCaptureAudit.audit_date + ' · period from ' + currentCaptureAudit.period_start"></div>
+                <h1 class="display font-extrabold text-2xl md:text-3xl mt-1" x-text="outletById(currentCaptureAudit.outlet_id)?.name || '(deleted outlet)'"></h1>
+                <div class="text-xs text-papad/80 mt-1.5">
+                  <span x-show="currentCaptureAudit.hq_auditor" class="desi"><span class="opacity-70">Auditor:</span> <span x-text="currentCaptureAudit.hq_auditor"></span></span>
+                  <span x-show="currentCaptureAudit.outlet_witness" class="desi"> · <span class="opacity-70">Witness:</span> <span x-text="currentCaptureAudit.outlet_witness"></span></span>
+                </div>
+              </div>
+              <span class="pill" :class="'pill-' + currentCaptureAudit.status" x-text="currentCaptureAudit.status.replace('_',' ')"></span>
+            </div>
+
+            <!-- Progress -->
+            <div class="mt-4 flex items-center gap-3">
+              <div class="flex-1 h-2 bg-white/15 rounded-full overflow-hidden">
+                <div class="h-full bg-haldi rounded-full transition-all"
+                     :style="`width: ${currentCaptureTotals.total ? (currentCaptureTotals.counted / currentCaptureTotals.total * 100) : 0}%`"></div>
+              </div>
+              <span class="text-sm tabular font-bold" x-text="currentCaptureTotals.counted + ' / ' + currentCaptureTotals.total"></span>
+            </div>
+          </div>
+
+          <!-- Live totals -->
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="card-jar !p-3 text-center">
+              <div class="caption">Shortfall</div>
+              <div class="display font-extrabold text-mirch tabular text-xl mt-1" x-text="fmtINR(Math.abs(currentCaptureTotals.shortfall))"></div>
+            </div>
+            <div class="card-jar !p-3 text-center">
+              <div class="caption">Overage</div>
+              <div class="display font-extrabold text-haldi tabular text-xl mt-1" style="color:#B58B00;" x-text="fmtINR(currentCaptureTotals.overage)"></div>
+            </div>
+            <div class="card-jar !p-3 text-center">
+              <div class="caption">Net</div>
+              <div class="display font-extrabold text-imli tabular text-xl mt-1" x-text="fmtINR(currentCaptureTotals.shortfall + currentCaptureTotals.overage)"></div>
+            </div>
+          </div>
+
+          <!-- Filter / submit row -->
+          <div class="card-jar !p-3 mb-4 sticky top-14 md:top-0 z-10 bg-papad/95 backdrop-blur">
+            <div class="flex gap-2 items-center flex-wrap">
+              <div class="relative flex-1 min-w-[160px]">
+                <svg class="i absolute left-3 top-3 text-imliFaint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input class="input !pl-10" inputmode="search" placeholder="Search SKU…" x-model="auditFilter">
+              </div>
+              <select class="input w-auto" x-model="auditCategory">
+                <option value="">All categories</option>
+                <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
+              </select>
+              <button x-show="currentCaptureAudit.status==='in_progress'" class="btn-success" @click="submitAudit(auditCaptureId)">
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Submit
+              </button>
+              <button class="btn-secondary" @click="exportAuditCsv(auditCaptureId)">
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- SKU list (each line as a brand card) -->
+          <div class="space-y-3">
+            <template x-for="line in filteredCaptureLines" :key="line.id">
+              <div class="card-jar !p-4 relative overflow-hidden"
+                   :class="{
+                     '!border-aam border-2': auditLineVariance(line) === 0,
+                     '!border-mirch/40 border-2': auditLineVariance(line) !== null && auditLineVariance(line) < 0,
+                     '!border-haldi border-2': auditLineVariance(line) !== null && auditLineVariance(line) > 0,
+                   }">
+                <!-- Header row: name + price + counted indicator -->
+                <div class="flex items-start justify-between gap-3 mb-3">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                      <span class="pill pill-active" x-text="skuById(line.sku_id)?.category"></span>
+                      <span class="text-[10px] text-imliFaint tabular" x-text="skuById(line.sku_id)?.unit"></span>
+                    </div>
+                    <div class="display font-extrabold text-imli text-base leading-tight truncate" x-text="skuById(line.sku_id)?.item_name"></div>
+                    <div class="text-xs text-imliSoft tabular mt-0.5" x-text="fmtINR(skuById(line.sku_id)?.sale_price || 0) + ' / unit'"></div>
+                  </div>
+                  <div x-show="line.physical_qty !== null && line.physical_qty !== '' && line.physical_qty !== undefined" class="w-8 h-8 rounded-lg bg-aam grid place-items-center text-white shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  </div>
+                </div>
+
+                <!-- Stat strip: opening, dispatched, sold, expected -->
+                <div class="grid grid-cols-4 gap-2 mb-3">
+                  <div class="stat-mini"><div class="lbl">Open</div><div class="val" x-text="fmtQty(line.opening_qty)"></div></div>
+                  <div class="stat-mini"><div class="lbl">+ Disp</div><div class="val" x-text="fmtQty(line.dispatched_in_period)"></div></div>
+                  <div class="stat-mini"><div class="lbl">− Sold</div><div class="val" x-text="fmtQty(line.sold_in_period)"></div></div>
+                  <div class="stat-mini !bg-imli !text-haldi"><div class="lbl !text-haldi/70">= Expected</div><div class="val !text-haldi" x-text="fmtQty(auditLineExpected(line))"></div></div>
+                </div>
+
+                <!-- Counter input -->
+                <div class="caption mb-2">Physical count</div>
+                <div class="flex items-center gap-3">
+                  <button class="counter-btn minus shrink-0"
+                          :disabled="currentCaptureAudit.status !== 'in_progress'"
+                          @click="line.physical_qty = Math.max(0, (parseFloat(line.physical_qty)||0) - 1); saveAuditLineQty(line)"
+                          aria-label="Decrease count">−</button>
+                  <input type="number" step="0.001" inputmode="decimal" placeholder="—"
+                         class="input flex-1 !text-3xl !font-extrabold !text-center tabular display !py-2"
+                         style="font-family:'Bricolage Grotesque'"
+                         x-model.number="line.physical_qty"
+                         @change="saveAuditLineQty(line)"
+                         :disabled="currentCaptureAudit.status !== 'in_progress'">
+                  <button class="counter-btn plus shrink-0"
+                          :disabled="currentCaptureAudit.status !== 'in_progress'"
+                          @click="line.physical_qty = (parseFloat(line.physical_qty)||0) + 1; saveAuditLineQty(line)"
+                          aria-label="Increase count">+</button>
+                </div>
+
+                <!-- Live variance callout -->
+                <template x-if="auditLineVariance(line) !== null">
+                  <div>
+                    <!-- Shortfall -->
+                    <div x-show="auditLineVariance(line) < 0" class="var-callout var-short">
+                      <div class="w-9 h-9 rounded-xl bg-mirch grid place-items-center text-white shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-xs font-bold">Shortfall · <span class="tabular" x-text="fmtQty(Math.abs(auditLineVariance(line)))"></span></div>
+                        <div class="display font-extrabold tabular text-base leading-tight" x-text="fmtINR(Math.abs(auditLineVarianceValue(line)))"></div>
+                      </div>
+                    </div>
+                    <!-- Overage -->
+                    <div x-show="auditLineVariance(line) > 0" class="var-callout var-over">
+                      <div class="w-9 h-9 rounded-xl bg-haldi grid place-items-center text-imli shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M7 14l5-5 5 5"/></svg>
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-xs font-bold">Overage · <span class="tabular" x-text="'+' + fmtQty(auditLineVariance(line))"></span></div>
+                        <div class="display font-extrabold tabular text-base leading-tight" x-text="fmtINR(auditLineVarianceValue(line))"></div>
+                      </div>
+                    </div>
+                    <!-- Match -->
+                    <div x-show="auditLineVariance(line) === 0" class="var-callout var-ok">
+                      <div class="w-9 h-9 rounded-xl bg-aam grid place-items-center text-white shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-xs font-bold">Perfect match</div>
+                        <div class="display font-extrabold tabular text-base leading-tight">₹0.00</div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+
+                <input type="text" class="input mt-3 text-xs" placeholder="Notes (damage seen, expired, etc.)"
+                       x-model="line.notes" @change="saveAuditLineQty(line)" :disabled="currentCaptureAudit.status !== 'in_progress'">
+              </div>
+            </template>
+            <div x-show="!filteredCaptureLines.length" class="text-center text-imliFaint py-12 italic">No SKUs match filter.</div>
+          </div>
+
+          <!-- Sticky running total bar -->
+          <div x-show="currentCaptureAudit.status==='in_progress' && currentCaptureTotals.counted > 0" class="running-bar mt-4 -mx-4 md:-mx-8 md:rounded-t-2xl">
+            <div class="flex-1 px-2 md:px-4">
+              <div class="caption">Running shortfall</div>
+              <div class="display font-extrabold text-mirch tabular text-xl leading-none" x-text="fmtINR(Math.abs(currentCaptureTotals.shortfall))"></div>
+            </div>
+            <button class="btn-success" @click="submitAudit(auditCaptureId)">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+              Submit audit
+            </button>
+          </div>
+        </div>
+      </template>
+    </section>
+
+    <!-- ==================== OUTLETS ==================== -->
+    <section x-show="view==='outlets'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div class="caption">Tumhare thikaane</div>
+            <h1>Outlets</h1>
+            <p class="sub">Where Aroura Achar lives, ground level.</p>
+          </div>
+          <button class="btn-primary" @click="newOutletDraft()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            New outlet
+          </button>
+        </div>
+      </div>
+
+      <div x-show="outletDraft" class="card-jar mb-6 !border-mirch border-2">
+        <div class="display font-bold text-imli text-lg mb-4" x-text="outletDraft?.id ? 'Edit outlet' : 'New outlet'"></div>
+        <template x-if="outletDraft">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div><label class="label">Name *</label><input class="input" x-model="outletDraft.name"></div>
+            <div><label class="label">Location</label><input class="input" x-model="outletDraft.location"></div>
+            <div><label class="label">Manager name</label><input class="input" x-model="outletDraft.manager_name"></div>
+            <div><label class="label">Manager phone</label><input class="input" x-model="outletDraft.manager_phone" inputmode="tel"></div>
+            <div><label class="label">Status</label>
+              <select class="input" x-model="outletDraft.status">
+                <option value="active">Active</option><option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div><label class="label">Started on</label><input type="date" class="input" x-model="outletDraft.started_on"></div>
+            <div class="md:col-span-2">
+              <label class="label">Excluded SKUs <span class="font-normal normal-case text-imliFaint">— this outlet doesn't carry these</span></label>
+              <select multiple class="input h-32" x-model="outletDraft.excluded_skus">
+                <template x-for="s in skus" :key="s.id"><option :value="s.id" x-text="s.item_name"></option></template>
+              </select>
+              <div class="text-xs text-imliFaint mt-1">Cmd/Ctrl-click to multi-select. <span x-text="(outletDraft.excluded_skus||[]).length + ' currently excluded'"></span></div>
+            </div>
+            <div class="md:col-span-2 flex gap-3">
+              <button class="btn-primary" @click="saveOutletDraft()">Save</button>
+              <button class="btn-secondary" @click="outletDraft=null">Cancel</button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <template x-for="o in outlets" :key="o.id">
+          <div class="card-jar hover:border-mirch transition cursor-pointer relative overflow-hidden" @click="openOutletDetail(o.id)">
+            <div class="absolute -top-4 -right-4 w-20 h-20 dotgrid text-haldi pointer-events-none"></div>
+            <div class="flex items-start justify-between relative">
+              <div class="min-w-0 flex-1 pr-2">
+                <div class="display font-extrabold text-imli text-lg leading-tight truncate" x-text="o.name"></div>
+                <div class="text-xs text-imliSoft truncate" x-text="o.location"></div>
+              </div>
+              <span class="pill shrink-0" :class="'pill-' + o.status" x-text="o.status"></span>
+            </div>
+            <div class="mt-4 text-sm space-y-1">
+              <div x-show="o.manager_name" class="flex items-center gap-2 text-imli">
+                <svg class="i text-imliSoft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg>
+                <span class="font-semibold" x-text="o.manager_name"></span>
+                <span x-show="o.manager_phone" class="text-imliFaint text-xs" x-text="'· ' + o.manager_phone"></span>
+              </div>
+              <div class="text-xs text-imliFaint" x-text="(o.excluded_skus?.length || 0) + ' excluded SKUs'"></div>
+            </div>
+            <div class="mt-4 pt-3 border-t-2 border-imli/8 flex items-center justify-between text-xs">
+              <span class="text-mirch font-bold flex items-center gap-1">
+                View stock
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </span>
+              <div class="flex gap-1">
+                <button class="btn-ghost" @click.stop="editOutlet(o.id)">Edit</button>
+                <button class="btn-ghost !text-mirch" @click.stop="deleteOutlet(o.id)">Delete</button>
+              </div>
+            </div>
+          </div>
+        </template>
+        <div x-show="!outlets.length" class="text-imliFaint col-span-full text-center py-12 italic">No outlets yet.</div>
+      </div>
+    </section>
+
+    <!-- ==================== OUTLET DETAIL ==================== -->
+    <section x-show="view==='outlet-detail' && outletDetailId">
+      <button class="btn-ghost mb-3" @click="go('outlets')">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back to outlets
+      </button>
+      <template x-if="outletById(outletDetailId)">
+        <div>
+          <div class="hero-head">
+            <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+            <div class="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <div class="caption" x-text="outletById(outletDetailId).location"></div>
+                <h1 x-text="outletById(outletDetailId).name"></h1>
+                <p class="sub" x-show="outletById(outletDetailId).manager_name">
+                  <span x-text="outletById(outletDetailId).manager_name"></span>
+                  <span x-show="outletById(outletDetailId).manager_phone" class="opacity-70" x-text="'· ' + outletById(outletDetailId).manager_phone"></span>
+                </p>
+              </div>
+              <div class="flex gap-2 items-center">
+                <span class="pill" :class="'pill-' + outletById(outletDetailId).status" x-text="outletById(outletDetailId).status"></span>
+                <button class="btn-secondary !py-1.5 !px-3 text-xs" @click="editOutlet(outletDetailId)">Edit</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+            <div class="card-jar !p-3">
+              <div class="caption">Stock value</div>
+              <div class="display font-extrabold text-imli tabular text-lg mt-1" x-text="fmtINR(outletDetailStats?.totalValue || 0)"></div>
+            </div>
+            <div class="card-jar !p-3">
+              <div class="caption">SKUs in stock</div>
+              <div class="display font-extrabold text-imli tabular text-lg mt-1">
+                <span x-text="outletDetailStats?.inStockCount || 0"></span>
+                <span class="text-sm text-imliFaint font-normal" x-text="'/ ' + (outletDetailStats?.activeSkuCount || 0)"></span>
+              </div>
+            </div>
+            <div class="card-jar !p-3">
+              <div class="caption">Last audit</div>
+              <div class="font-bold text-imli mt-1 tabular" x-text="outletDetailStats?.lastAuditDate || '—'"></div>
+              <div x-show="outletDetailStats?.lastAuditStatus" class="mt-0.5"><span class="pill" :class="'pill-' + outletDetailStats?.lastAuditStatus" x-text="outletDetailStats?.lastAuditStatus"></span></div>
+            </div>
+            <div class="card-jar !p-3">
+              <div class="caption">Last dispatch</div>
+              <div class="font-bold text-imli mt-1 tabular" x-text="outletDetailStats?.lastDispatchDate || '—'"></div>
+            </div>
+          </div>
+
+          <div class="card-jar !p-3 mb-3">
+            <div class="flex gap-2 items-center flex-wrap">
+              <input class="input flex-1 min-w-[160px]" placeholder="Search SKU…" x-model="outletDetailFilter">
+              <select class="input w-auto" x-model="outletDetailSort">
+                <option value="value_desc">Sort: Value (high→low)</option>
+                <option value="qty_desc">Sort: Quantity (high→low)</option>
+                <option value="name_asc">Sort: Name (A→Z)</option>
+              </select>
+              <label class="flex items-center gap-2 text-sm text-imli cursor-pointer">
+                <input type="checkbox" x-model="outletDetailHideZero" class="accent-mirch w-4 h-4">
+                Hide zero qty
+              </label>
+              <button class="btn-secondary !py-1.5 !px-3 text-xs" @click="exportOutletStockCsv(outletDetailId)">Export CSV</button>
+            </div>
+          </div>
+
+          <div class="card-jar !p-0 overflow-x-auto">
+            <table class="w-full">
+              <thead><tr>
+                <th class="table-th">Item</th><th class="table-th">Unit</th>
+                <th class="table-th text-right">Qty</th><th class="table-th text-right">Sale price</th>
+                <th class="table-th text-right">Value</th>
+              </tr></thead>
+              <tbody>
+                <template x-for="r in filteredOutletStock" :key="r.sku_id">
+                  <tr>
+                    <td class="table-td">
+                      <div class="font-semibold text-imli" x-text="r.item_name"></div>
+                      <div class="text-xs text-imliFaint" x-text="r.category"></div>
+                    </td>
+                    <td class="table-td text-xs text-imliSoft" x-text="r.unit"></td>
+                    <td class="table-td text-right tabular font-bold" :class="{'text-mirch': r.qty < 0}" x-text="fmtQty(r.qty)"></td>
+                    <td class="table-td text-right tabular text-imliSoft" x-text="fmtINR(r.sale_price)"></td>
+                    <td class="table-td text-right tabular font-bold text-imli" :class="{'text-mirch': r.value < 0}" x-text="fmtINR(r.value)"></td>
+                  </tr>
+                </template>
+                <tr x-show="!filteredOutletStock.length">
+                  <td colspan="5" class="table-td text-center text-imliFaint py-12 italic">
+                    <span x-show="outletDetailHideZero">No SKUs with non-zero stock. Untick "Hide zero qty" to see all.</span>
+                    <span x-show="!outletDetailHideZero">No matching SKUs.</span>
+                  </td>
+                </tr>
+              </tbody>
+              <tfoot x-show="filteredOutletStock.length">
+                <tr class="bg-papadDeep font-bold">
+                  <td class="table-td" colspan="2">Total (<span x-text="filteredOutletStock.length"></span> shown)</td>
+                  <td class="table-td text-right tabular" x-text="fmtQty(filteredOutletStock.reduce((s,r) => s + r.qty, 0))"></td>
+                  <td class="table-td"></td>
+                  <td class="table-td text-right tabular text-mirch" x-text="fmtINR(filteredOutletStock.reduce((s,r) => s + r.value, 0))"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <p class="text-xs text-imliFaint mt-3 italic px-1">
+            Quantities are computed as: opening (from last finalized audit) + dispatches received − POS sales − approved adjustments.
+            <span x-show="!outletDetailStats?.lastAuditDate">No prior audit, so opening is treated as 0.</span>
+          </p>
+        </div>
+      </template>
+    </section>
+
+    <!-- ==================== SKUs ==================== -->
+    <section x-show="view==='skus'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div class="caption">Catalogue</div>
+            <h1>SKUs</h1>
+            <p class="sub">Pickle, papad, candy — all of it.</p>
+          </div>
+          <button class="btn-primary" @click="addSku()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            New SKU
+          </button>
+        </div>
+      </div>
+
+      <div class="card-jar mb-3 !p-3">
+        <div class="flex gap-2 flex-wrap">
+          <div class="relative flex-1 min-w-[180px]">
+            <svg class="i absolute left-3 top-3 text-imliFaint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+            <input class="input !pl-10" placeholder="Search SKUs…" x-model="skuSearch">
+          </div>
+          <select class="input w-auto" x-model="skuFilterCategory">
+            <option value="">All categories</option>
+            <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
+          </select>
+        </div>
+        <div class="text-xs text-imliFaint mt-2"><span x-text="filteredSkus.length"></span> of <span x-text="skus.length"></span> shown</div>
+      </div>
+
+      <div class="card-jar !p-0 overflow-x-auto">
+        <table class="w-full">
+          <thead><tr>
+            <th class="table-th">SKU</th><th class="table-th">Item</th>
+            <th class="table-th">Unit</th><th class="table-th text-right">Sale ₹</th>
+            <th class="table-th">Category</th><th class="table-th">Active</th>
+          </tr></thead>
+          <tbody>
+            <template x-for="sku in filteredSkus" :key="sku.id">
+              <tr @dblclick="skuEditingId=sku.id">
+                <td class="table-td font-mono text-xs text-imliFaint" x-text="sku.id"></td>
+                <td class="table-td">
+                  <template x-if="skuEditingId===sku.id">
+                    <input class="input !py-1.5" x-model="sku.item_name" @blur="saveSkuEdit(sku)" @keydown.enter="saveSkuEdit(sku)">
+                  </template>
+                  <template x-if="skuEditingId!==sku.id">
+                    <span class="font-semibold text-imli" x-text="sku.item_name"></span>
+                  </template>
+                </td>
+                <td class="table-td">
+                  <template x-if="skuEditingId===sku.id">
+                    <select class="input !py-1.5" x-model="sku.unit" @change="saveSkuEdit(sku)">
+                      <option>piece</option><option>kg</option><option>g</option><option>ml</option>
+                    </select>
+                  </template>
+                  <template x-if="skuEditingId!==sku.id"><span class="text-imliSoft" x-text="sku.unit"></span></template>
+                </td>
+                <td class="table-td text-right tabular">
+                  <template x-if="skuEditingId===sku.id">
+                    <input type="number" step="0.01" class="input !py-1.5 text-right w-24" x-model.number="sku.sale_price" @blur="saveSkuEdit(sku)" @keydown.enter="saveSkuEdit(sku)">
+                  </template>
+                  <template x-if="skuEditingId!==sku.id">
+                    <span :class="{'text-mirch font-bold': sku.sale_price === 0}" x-text="fmtINR(sku.sale_price)"></span>
+                  </template>
+                </td>
+                <td class="table-td">
+                  <template x-if="skuEditingId===sku.id">
+                    <input class="input !py-1.5" x-model="sku.category" list="cat-list" @blur="saveSkuEdit(sku)" @keydown.enter="saveSkuEdit(sku)">
+                  </template>
+                  <template x-if="skuEditingId!==sku.id">
+                    <span class="pill pill-active" x-text="sku.category"></span>
+                  </template>
+                </td>
+                <td class="table-td">
+                  <input type="checkbox" x-model="sku.active" @change="saveSkuEdit(sku)" class="accent-mirch w-4 h-4">
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+        <datalist id="cat-list">
+          <template x-for="c in categories" :key="c"><option :value="c"></option></template>
+        </datalist>
+      </div>
+      <p class="text-xs text-imliFaint mt-2 italic px-1">Double-click a row to edit. SKUs with ₹0 prices are flagged in red — fix them before scaling.</p>
+    </section>
+
+    <!-- ==================== DISPATCHES ==================== -->
+    <section x-show="view==='dispatches'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="flex items-start justify-between flex-wrap gap-3">
+          <div>
+            <div class="caption">Godown to outlet</div>
+            <h1>Dispatches</h1>
+            <p class="sub">Maal kaha gaya, kitna gaya.</p>
+          </div>
+          <button class="btn-primary" @click="newDispatchDraft()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            New dispatch
+          </button>
+        </div>
+      </div>
+
+      <div x-show="dispatchDraft" class="card-jar mb-6 !border-mirch border-2">
+        <div class="display font-bold text-imli text-lg mb-4">New dispatch</div>
+        <template x-if="dispatchDraft">
+          <div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <div>
+                <label class="label">Outlet</label>
+                <select class="input" x-model="dispatchDraft.outlet_id">
+                  <template x-for="o in outlets" :key="o.id"><option :value="o.id" x-text="o.name"></option></template>
+                </select>
+              </div>
+              <div><label class="label">Dispatched on</label><input type="date" class="input" x-model="dispatchDraft.dispatched_on"></div>
+              <div><label class="label">Dispatched by</label><input class="input" x-model="dispatchDraft.dispatched_by" placeholder="Godown staff name"></div>
+            </div>
+            <div class="caption mb-2">Lines</div>
+            <div class="space-y-2 mb-3">
+              <template x-for="(line, idx) in dispatchDraft.lines" :key="line.id">
+                <div class="flex gap-2 items-center">
+                  <select class="input flex-1" x-model="line.sku_id">
+                    <option value="">Select SKU…</option>
+                    <template x-for="s in skus.filter(x => x.active)" :key="s.id"><option :value="s.id" x-text="s.item_name"></option></template>
+                  </select>
+                  <input type="number" step="0.001" class="input w-24 text-right tabular" x-model.number="line.qty_dispatched" placeholder="Qty">
+                  <button class="btn-secondary !px-3" @click="removeDispatchLine(idx)" aria-label="Remove">×</button>
+                </div>
+              </template>
+            </div>
+            <button class="btn-secondary mb-4" @click="addDispatchLine()">+ Add line</button>
+            <div class="flex gap-3 flex-wrap">
+              <button class="btn-secondary" @click="saveDispatch('draft')">Save draft</button>
+              <button class="btn-primary" @click="saveDispatch('sent')">Mark as sent</button>
+              <button class="btn-secondary ml-auto" @click="dispatchDraft=null">Cancel</button>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Acknowledgement modal -->
+      <div x-show="dispatchAckId" x-transition class="fixed inset-0 bg-imli/60 flex items-center justify-center z-50 p-4" @click.self="dispatchAckId=null">
+        <div class="bg-papad rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-imli/15">
+          <div class="p-5 border-b-2 border-imli/10 flex justify-between items-center bg-papadDeep rounded-t-3xl">
+            <div>
+              <div class="display font-bold text-imli text-lg">Acknowledge receipt</div>
+              <div class="caption">Outlet confirms what was actually received</div>
+            </div>
+            <button @click="dispatchAckId=null" class="w-9 h-9 rounded-xl hover:bg-papad grid place-items-center text-imliSoft" aria-label="Close">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <div class="p-5">
+            <table class="w-full text-sm">
+              <thead><tr><th class="table-th rounded-l-lg">Item</th><th class="table-th text-right">Sent</th><th class="table-th text-right rounded-r-lg">Received</th></tr></thead>
+              <tbody>
+                <template x-for="ln in _ackLines" :key="ln.id">
+                  <tr>
+                    <td class="table-td font-semibold text-imli" x-text="skuById(ln.sku_id)?.item_name"></td>
+                    <td class="table-td text-right tabular text-imliSoft" x-text="fmtQty(ln.qty_dispatched)"></td>
+                    <td class="table-td text-right">
+                      <input type="number" step="0.001" class="input !py-1.5 w-24 text-right tabular" x-model.number="ln.qty_received">
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+            <div class="mt-4 flex gap-3">
+              <button class="btn-primary" @click="confirmAckDispatch()">
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+                Confirm receipt
+              </button>
+              <button class="btn-secondary" @click="dispatchAckId=null">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-jar !p-0 overflow-x-auto">
+        <table class="w-full">
+          <thead><tr><th class="table-th">Date</th><th class="table-th">Outlet</th><th class="table-th text-right">Lines</th><th class="table-th">Status</th><th class="table-th"></th></tr></thead>
+          <tbody>
+            <template x-for="d in [...dispatches].sort((a,b) => b.dispatched_on.localeCompare(a.dispatched_on))" :key="d.id">
+              <tr>
+                <td class="table-td tabular text-imliSoft" x-text="d.dispatched_on"></td>
+                <td class="table-td font-semibold text-imli" x-text="outletById(d.outlet_id)?.name || '(deleted)'"></td>
+                <td class="table-td text-right tabular" x-text="dispatchLinesFor(d.id).length"></td>
+                <td class="table-td"><span class="pill" :class="'pill-' + d.status" x-text="d.status"></span></td>
+                <td class="table-td text-right">
+                  <button x-show="d.status==='sent'" class="btn-ghost !text-mirch" @click="openAckDispatch(d.id)">Acknowledge</button>
+                  <span x-show="d.status==='received'" class="text-xs text-imliFaint" x-text="'Received ' + d.received_on"></span>
+                </td>
+              </tr>
+            </template>
+            <tr x-show="!dispatches.length"><td colspan="5" class="table-td text-center text-imliFaint py-12 italic">No dispatches yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== POS ==================== -->
+    <section x-show="view==='pos'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="caption">Sales data</div>
+        <h1>POS uploads</h1>
+        <p class="sub">Bik kya, kitna bik gaya.</p>
+      </div>
+
+      <div class="card-jar mb-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-haldi grid place-items-center">
+            <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <div>
+            <div class="display font-bold text-imli text-lg">Upload POS export</div>
+            <div class="caption">CSV format · sku_id or item_name · qty_sold · revenue (optional)</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="label">Outlet</label>
+            <select class="input" x-model="posUpload.outlet">
+              <option value="">Pick outlet…</option>
+              <template x-for="o in outlets" :key="o.id"><option :value="o.id" x-text="o.name"></option></template>
+            </select>
+          </div>
+          <div><label class="label">Period start</label><input type="date" class="input" x-model="posUpload.period_start"></div>
+          <div><label class="label">Period end</label><input type="date" class="input" x-model="posUpload.period_end"></div>
+        </div>
+        <input type="file" accept=".csv" @change="posCsvSelected($event)" class="mt-4 text-sm file:btn-secondary file:!py-2 file:!px-4 file:cursor-pointer file:mr-3">
+        <div x-show="posUpload.error" class="mt-3 text-sm text-mirch font-semibold" x-text="posUpload.error"></div>
+        <div x-show="posUpload.parsed" class="mt-4 p-3 rounded-xl bg-aamSoft border-2 border-aam/30">
+          <div class="text-sm text-aamDark mb-2 font-semibold">
+            Parsed <span class="tabular" x-text="posUpload.parsed?.length"></span> rows.
+            <span x-show="posUpload.unmatched?.length" class="text-mirch">
+              <span x-text="posUpload.unmatched.length"></span> unmatched (skipped).
+            </span>
+          </div>
+          <button class="btn-primary" @click="confirmPosImport()">Import</button>
+        </div>
+      </div>
+
+      <div class="card-jar !p-0 overflow-x-auto">
+        <table class="w-full">
+          <thead><tr><th class="table-th">Outlet</th><th class="table-th">Period</th><th class="table-th text-right">Lines</th><th class="table-th">Uploaded</th></tr></thead>
+          <tbody>
+            <template x-for="p in posImports" :key="p.id">
+              <tr>
+                <td class="table-td font-semibold text-imli" x-text="outletById(p.outlet_id)?.name || '(deleted)'"></td>
+                <td class="table-td text-xs tabular text-imliSoft" x-text="p.period_start + ' → ' + p.period_end"></td>
+                <td class="table-td text-right tabular" x-text="p.line_count"></td>
+                <td class="table-td text-xs text-imliFaint tabular" x-text="p.uploaded_on?.slice(0,10)"></td>
+              </tr>
+            </template>
+            <tr x-show="!posImports.length"><td colspan="4" class="table-td text-center text-imliFaint py-12 italic">No POS data yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== SETTINGS ==================== -->
+    <section x-show="view==='settings'">
+      <div class="hero-head">
+        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div class="caption">App settings</div>
+        <h1>Settings</h1>
+        <p class="sub">Backup, reset, and dosti.</p>
+      </div>
+
+      <div class="card-jar mb-4">
+        <div class="display font-bold text-imli text-lg mb-2">Storage</div>
+        <p class="text-sm text-imliSoft mb-4">Data is stored in your browser's local storage. It stays on this device. Use Export to back up.</p>
+        <div class="flex gap-3 flex-wrap">
+          <button class="btn-secondary" @click="loadDemoData()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Load demo data
+          </button>
+          <button class="btn-secondary" @click="
+            const blob = new Blob([JSON.stringify({skus,outlets,dispatches,dispatchLines,posImports,posLines,audits,auditLines,adjustments}, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a'); link.href = url; link.download = 'audit-baba-export-' + todayISO() + '.json'; link.click();
+            URL.revokeObjectURL(url);
+          ">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export JSON
+          </button>
+          <button class="btn-danger" @click="resetAll()">
+            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+            Wipe all data
+          </button>
+        </div>
+      </div>
+      <div class="card-jar text-sm text-imliSoft">
+        <div class="display font-bold text-imli text-lg mb-2">About</div>
+        <p>This is a single-page prototype that runs entirely in your browser. When you're ready to scale to multiple users / phones syncing, port the data model to Postgres + a Next.js API. The SKU master, dispatch flow, POS upload format, audit logic, and variance formulas all transfer directly.</p>
+        <div class="squiggle mt-4 max-w-32"></div>
+        <p class="desi text-aamDark mt-3 font-semibold text-base">हर गिनती का हिसाब · Aroura Achar internal tool · Since 2026</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============= MOBILE BOTTOM NAV ============= -->
+<nav class="md:hidden fixed bottom-0 inset-x-0 bg-papad border-t-2 border-imli/10 z-30 flex" style="padding-bottom: env(safe-area-inset-bottom);">
+  <button class="bnav" :class="{'active': view==='dashboard'}" @click="go('dashboard')">
+    <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+    Home
+  </button>
+  <button class="bnav" :class="{'active': ['audits','audit-capture'].includes(view)}" @click="go('audits')">
+    <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
+    Audits
+  </button>
+  <button class="bnav" :class="{'active': ['outlets','outlet-detail'].includes(view)}" @click="go('outlets')">
+    <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+    Outlets
+  </button>
+  <button class="bnav" :class="{'active': view==='skus'}" @click="go('skus')">
+    <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></span>
+    SKUs
+  </button>
+  <button class="bnav" :class="{'active': view==='settings'}" @click="go('settings')">
+    <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+    More
+  </button>
+</nav>
+
+</body>
+</html>

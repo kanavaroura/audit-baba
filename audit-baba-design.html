@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Audit Baba · Brand-Aligned UI/UX</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Poppins:wght@300;400;500;600;700&family=Baloo+2:wght@500;600;700;800&family=Hind:wght@500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          mirch: '#E63946',       // Lal Mirch Red
+          mirchDark: '#C92A37',
+          haldi: '#FFCE3D',       // Amritsar Yellow
+          aam:   '#6CA653',       // Green Mango
+          aamDark: '#4F8A3D',
+          imli:  '#4B2E2E',       // Tamarind Brown
+          imliSoft: '#6B4848',
+          papad: '#FAF9F6',       // Papad White
+          papadDeep: '#F1EEE6',
+          cream: '#FFF6E6'
+        },
+        fontFamily: {
+          display: ['"Bricolage Grotesque"', 'system-ui', 'sans-serif'],
+          body:    ['Poppins', 'system-ui', 'sans-serif'],
+          desi:    ['"Baloo 2"', '"Hind"', 'system-ui', 'sans-serif'],
+        },
+        boxShadow: {
+          jar: '0 20px 60px -20px rgba(75, 46, 46, 0.35), 0 8px 20px -8px rgba(75, 46, 46, 0.25)',
+          soft: '0 2px 8px rgba(75, 46, 46, 0.08)',
+        },
+        borderRadius: {
+          jar: '28px',
+        }
+      }
+    }
+  };
+</script>
+<style>
+  body {
+    font-family: 'Poppins', system-ui, sans-serif;
+    background: #F1EEE6;
+    color: #4B2E2E;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display { font-family: 'Bricolage Grotesque', system-ui, sans-serif; letter-spacing: -0.02em; }
+  .desi    { font-family: 'Baloo 2', 'Hind', system-ui, sans-serif; }
+
+  /* Phone frame */
+  .phone {
+    width: 380px;
+    height: 780px;
+    background: #FAF9F6;
+    border-radius: 48px;
+    border: 10px solid #4B2E2E;
+    box-shadow: 0 30px 80px -20px rgba(75, 46, 46, 0.45), 0 10px 30px -10px rgba(75, 46, 46, 0.3);
+    overflow: hidden;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 130px; height: 28px;
+    background: #4B2E2E;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    z-index: 50;
+  }
+  .phone-screen {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .phone-screen::-webkit-scrollbar { display: none; }
+  .phone-screen { scrollbar-width: none; }
+  .status-bar {
+    height: 44px;
+    padding: 0 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px; font-weight: 600; color: #4B2E2E;
+  }
+
+  /* Aroura logo badge — replicates the rounded label badge from the brand guide */
+  .badge {
+    background: #E63946;
+    color: white;
+    border-radius: 14px 14px 18px 18px / 14px 14px 24px 24px;
+    padding: 8px 18px;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #E63946;
+    text-align: center;
+    font-family: 'Bricolage Grotesque';
+    line-height: 1;
+  }
+
+  /* The yellow asterisk motif from the brand guide */
+  .star::before {
+    content: '';
+    display: inline-block;
+    width: 1em; height: 1em;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07M12 2l-1.5 5L7 8.5 11 11 9 16l3-3 3 3-2-5 4-2.5L13.5 7z'/></svg>") center/contain no-repeat;
+            mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07'/></svg>") center/contain no-repeat;
+  }
+
+  /* Squiggle motif */
+  .squiggle {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 12'><path d='M0 6 Q 10 0, 20 6 T 40 6 T 60 6 T 80 6' stroke='%23E63946' stroke-width='2.5' fill='none' stroke-linecap='round'/></svg>") repeat-x center;
+    height: 12px;
+  }
+
+  /* Dot grid motif */
+  .dotgrid {
+    background-image: radial-gradient(currentColor 1.2px, transparent 1.5px);
+    background-size: 12px 12px;
+    opacity: 0.35;
+  }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* Chip / pill */
+  .chip { @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold; }
+
+  /* Bottom nav */
+  .nav-tab { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 6px; flex: 1; color: #6B4848; font-size: 10.5px; font-weight: 500; }
+  .nav-tab.active { color: #E63946; }
+  .nav-tab.active .nav-icon { background: #E63946; color: white; }
+  .nav-icon { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: transparent; transition: all .2s; }
+
+  /* Big CTA */
+  .cta-primary { background: #E63946; color: white; padding: 16px 24px; border-radius: 16px; font-weight: 700; font-size: 16px; box-shadow: 0 6px 0 -1px #C92A37, 0 14px 24px -8px rgba(230, 57, 70, .45); transition: transform .12s ease, box-shadow .12s ease; cursor: pointer; }
+  .cta-primary:active { transform: translateY(2px); box-shadow: 0 4px 0 -1px #C92A37, 0 10px 18px -8px rgba(230, 57, 70, .5); }
+
+  /* Section caption */
+  .caption { font-family: 'Baloo 2'; font-size: 12px; color: #6B4848; letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
+
+  /* Counter */
+  .counter-btn {
+    width: 56px; height: 56px; border-radius: 18px;
+    background: white; border: 2px solid #4B2E2E;
+    font-family: 'Bricolage Grotesque'; font-size: 28px; font-weight: 700;
+    color: #4B2E2E; display: grid; place-items: center;
+    transition: transform .12s, box-shadow .12s;
+    box-shadow: 0 3px 0 0 #4B2E2E;
+  }
+  .counter-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 0 #4B2E2E; }
+  .counter-btn.minus { color: #E63946; border-color: #E63946; box-shadow: 0 3px 0 0 #E63946; }
+  .counter-btn.plus  { color: #6CA653; border-color: #6CA653; box-shadow: 0 3px 0 0 #6CA653; }
+
+  /* SVG icon helper */
+  svg.icon { width: 20px; height: 20px; stroke-width: 2; }
+
+  /* Variance bar */
+  .var-bar { height: 8px; border-radius: 999px; background: #F1EEE6; overflow: hidden; }
+  .var-bar > span { display: block; height: 100%; }
+
+  /* Heatmap cell */
+  .heat { width: 100%; aspect-ratio: 1; border-radius: 8px; display:grid; place-items:center; font-weight:700; font-size:11px; }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ====================== HEADER ====================== -->
+<header class="relative overflow-hidden bg-papad border-b-4 border-imli">
+  <div class="absolute -top-10 -left-10 w-64 h-64 dotgrid text-mirch"></div>
+  <div class="absolute top-12 right-8 w-32 h-32 dotgrid text-aam"></div>
+  <div class="absolute bottom-0 right-0 w-64 h-2 bg-haldi"></div>
+
+  <div class="max-w-7xl mx-auto px-8 py-14 relative">
+    <div class="flex items-start justify-between gap-12 flex-wrap">
+      <div class="max-w-3xl">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="badge text-xs px-3 py-1.5">
+            <div class="text-[8px] tracking-[.2em] opacity-90">— LUCKNOW'S —</div>
+            <div class="text-base font-bold">AROURA ACHAR</div>
+            <div class="text-[8px] tracking-[.2em] opacity-90">SINCE 1944</div>
+          </div>
+          <span class="caption">Internal Tools</span>
+        </div>
+
+        <h1 class="display font-extrabold text-imli leading-[0.9]" style="font-size: clamp(48px, 7vw, 96px);">
+          AUDIT <span class="text-mirch">BABA</span><span class="text-haldi">*</span>
+        </h1>
+        <p class="desi text-2xl text-aamDark mt-3 font-semibold">हर गिनती का हिसाब</p>
+        <p class="text-imliSoft mt-4 max-w-xl text-[15px]">
+          Brand-aligned UI/UX for Aroura Achar's outlet inventory audit app.
+          Mobile-first. Dadi-with-a-smartphone friendly. Variance math runs live while you count.
+        </p>
+
+        <div class="flex items-center gap-4 mt-8 text-sm">
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-mirch"></span> Lal Mirch Red</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-haldi"></span> Amritsar Yellow</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-aam"></span> Green Mango</div>
+          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-imli"></span> Tamarind Brown</div>
+        </div>
+      </div>
+
+      <!-- Logo lockup mock -->
+      <div class="hidden md:block relative">
+        <div class="w-56 h-56 rounded-full bg-mirch grid place-items-center shadow-jar relative">
+          <svg class="absolute -top-6 -right-6 text-haldi" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+          <div class="badge !bg-white !text-mirch shadow-none border-mirch" style="box-shadow: 0 0 0 2px white;">
+            <div class="text-[8px] tracking-[.2em]">— LUCKNOW'S —</div>
+            <div class="text-2xl font-bold display">AROURA<br>ACHAR</div>
+            <div class="text-[8px] tracking-[.2em]">— SINCE 1944 —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="squiggle max-w-7xl mx-auto"></div>
+</header>
+
+<!-- ====================== SCREENS GALLERY ====================== -->
+<main class="max-w-7xl mx-auto px-6 py-16">
+
+  <div class="flex items-center gap-3 mb-3">
+    <span class="caption">Screen Flow</span>
+    <span class="h-px flex-1 bg-imli/20"></span>
+  </div>
+  <h2 class="display text-4xl font-extrabold text-imli mb-2">Six screens, one audit.</h2>
+  <p class="text-imliSoft mb-12 max-w-2xl">From login to sign-off. Designed for the HQ auditor + outlet witness pair counting on a phone, replacing the old paper-and-spreadsheet workflow.</p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-16 justify-items-center">
+
+    <!-- ============= SCREEN 1: SPLASH / LOGIN ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <div class="relative h-full bg-mirch text-white px-7 pt-12 pb-10 flex flex-col" style="min-height: 720px;">
+            <!-- decorative motifs -->
+            <svg class="absolute top-20 right-6 text-haldi" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+            <div class="absolute bottom-32 left-4 w-24 h-24 dotgrid text-white/40"></div>
+            <svg class="absolute top-44 left-6 text-white/30" width="32" height="14" viewBox="0 0 80 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M0 6 Q 10 0, 20 6 T 40 6 T 60 6 T 80 6"/></svg>
+
+            <div class="flex justify-center mb-10">
+              <div class="w-28 h-28 rounded-full bg-white grid place-items-center">
+                <div class="badge !shadow-none !border-mirch" style="box-shadow: 0 0 0 2px white;">
+                  <div class="text-[6px] tracking-[.2em]">LUCKNOW'S</div>
+                  <div class="text-sm display font-bold">AROURA<br>ACHAR</div>
+                  <div class="text-[6px] tracking-[.2em]">SINCE 1944</div>
+                </div>
+              </div>
+            </div>
+
+            <h1 class="display font-extrabold text-center leading-[0.95]" style="font-size: 56px;">
+              AUDIT<br>BABA<span class="text-haldi">*</span>
+            </h1>
+            <p class="desi text-center text-2xl font-semibold mt-3 text-haldi">हर गिनती का हिसाब</p>
+            <p class="text-center text-white/85 mt-2 text-sm">Account for every count.</p>
+
+            <div class="flex-1"></div>
+
+            <div class="bg-white/10 backdrop-blur rounded-2xl p-4 mb-5 border border-white/20">
+              <div class="text-[11px] uppercase tracking-widest text-haldi font-bold mb-1">Tip from Dadi</div>
+              <p class="desi text-base">"Beta, paper bhool jao. Jeb mein sab hai."</p>
+            </div>
+
+            <button class="bg-haldi text-imli py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2" style="box-shadow: 0 5px 0 -1px #D4A82C;">
+              Login with Phone
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+            <p class="text-center text-white/70 text-xs mt-4">Powered by Aroura Achar · Since 1944</p>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">01</div>
+        <div class="display font-bold text-lg text-imli">Welcome / Login</div>
+      </div>
+    </div>
+
+    <!-- ============= SCREEN 2: HQ DASHBOARD ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <div class="px-5 pt-3 pb-24">
+            <!-- Top greeting -->
+            <div class="flex items-start justify-between mb-5">
+              <div>
+                <p class="caption">Namaste, Kanav</p>
+                <h2 class="display font-extrabold text-imli text-2xl leading-tight mt-1">Aaj ka <span class="text-mirch">hisaab.</span></h2>
+              </div>
+              <div class="w-11 h-11 rounded-full bg-imli grid place-items-center text-haldi font-bold display text-lg">K</div>
+            </div>
+
+            <!-- Big KPI card -->
+            <div class="rounded-jar bg-mirch text-white p-5 relative overflow-hidden mb-4 shadow-jar">
+              <div class="absolute -top-4 -right-4 w-32 h-32 dotgrid text-white/40"></div>
+              <svg class="absolute top-3 right-3 text-haldi" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+
+              <div class="text-[11px] uppercase tracking-widest text-haldi font-bold">April Shortfall</div>
+              <div class="display font-extrabold tabular leading-none mt-2" style="font-size: 56px;">₹24,840</div>
+              <div class="flex items-center gap-2 mt-3 text-sm">
+                <span class="chip bg-haldi text-imli">↓ 18% vs Mar</span>
+                <span class="text-white/80 text-xs">across 3 outlets</span>
+              </div>
+            </div>
+
+            <!-- Two small KPIs -->
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <div class="rounded-2xl bg-white p-4 border-2 border-imli/10 shadow-soft">
+                <div class="caption">Audits this month</div>
+                <div class="display font-bold text-3xl text-imli mt-1">2 <span class="text-base text-imliSoft font-normal">/ 3</span></div>
+                <div class="var-bar mt-2"><span class="bg-aam" style="width:66%"></span></div>
+              </div>
+              <div class="rounded-2xl bg-white p-4 border-2 border-imli/10 shadow-soft">
+                <div class="caption">Top losing SKU</div>
+                <div class="display font-bold text-base text-imli mt-1 leading-tight">Mango Pickle 500g</div>
+                <div class="text-mirch text-sm font-semibold tabular mt-1">−₹6,200</div>
+              </div>
+            </div>
+
+            <!-- Pending audits list -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="caption">Pending Audits</div>
+              <div class="text-xs text-mirch font-semibold">See all</div>
+            </div>
+
+            <div class="space-y-3 mb-5">
+              <!-- Outlet card -->
+              <div class="bg-white rounded-2xl p-4 border-2 border-imli/10 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-haldi/30 grid place-items-center">
+                  <svg class="text-imli" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-imli truncate">Hazratganj Outlet</div>
+                  <div class="text-xs text-imliSoft">Last audit · 22 days ago</div>
+                </div>
+                <span class="chip bg-mirch/10 text-mirch">Overdue</span>
+              </div>
+
+              <div class="bg-white rounded-2xl p-4 border-2 border-imli/10 flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-aam/20 grid place-items-center">
+                  <svg class="text-aamDark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-semibold text-imli truncate">Gomti Nagar</div>
+                  <div class="text-xs text-imliSoft">Due in 4 days</div>
+                </div>
+                <span class="chip bg-aam/15 text-aamDark">On track</span>
+              </div>
+            </div>
+
+            <button class="cta-primary w-full flex items-center justify-center gap-2">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              Start New Audit
+            </button>
+          </div>
+
+          <!-- bottom nav -->
+          <div class="absolute bottom-0 inset-x-0 bg-papad border-t-2 border-imli/10 px-2 pt-1 pb-3 flex">
+            <a class="nav-tab active"><div class="nav-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>Home</a>
+            <a class="nav-tab"><div class="nav-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>Audits</a>
+            <a class="nav-tab"><div class="nav-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg></div>Reports</a>
+            <a class="nav-tab"><div class="nav-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></div>Profile</a>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">02</div>
+        <div class="display font-bold text-lg text-imli">HQ Dashboard</div>
+      </div>
+    </div>
+
+    <!-- ============= SCREEN 3: PICK OUTLET ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <div class="px-5 pt-3 pb-24">
+            <div class="flex items-center gap-3 mb-5">
+              <button class="w-10 h-10 rounded-xl bg-white border-2 border-imli/15 grid place-items-center">
+                <svg class="icon text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <div class="flex-1">
+                <p class="caption">Step 1 of 4</p>
+                <h2 class="display font-extrabold text-imli text-xl leading-tight">Kis outlet ka audit?</h2>
+              </div>
+            </div>
+
+            <!-- search -->
+            <div class="relative mb-4">
+              <svg class="icon absolute left-4 top-3.5 text-imliSoft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+              <input type="search" inputmode="search" placeholder="Search outlets…" class="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-white border-2 border-imli/10 text-sm focus:outline-none focus:border-mirch placeholder:text-imliSoft/60">
+            </div>
+
+            <div class="caption mb-3">3 active outlets</div>
+
+            <!-- Outlet card 1 — selected -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-mirch shadow-soft mb-3 relative">
+              <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-mirch text-white grid place-items-center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-xl bg-mirch/10 grid place-items-center shrink-0">
+                  <svg class="text-mirch" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="display font-bold text-imli text-lg">Hazratganj</div>
+                  <div class="text-xs text-imliSoft">Manager · Rakesh Verma</div>
+                  <div class="flex items-center gap-3 mt-2 text-xs">
+                    <span class="text-imliSoft">Last: 22 Mar</span>
+                    <span class="text-mirch font-semibold tabular">−₹8,420 last month</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div class="bg-papadDeep rounded-xl py-2"><div class="text-[10px] caption !text-imliSoft">SKUs</div><div class="display font-bold text-imli tabular">208</div></div>
+                <div class="bg-papadDeep rounded-xl py-2"><div class="text-[10px] caption !text-imliSoft">Dispatched</div><div class="display font-bold text-imli tabular">1,420</div></div>
+                <div class="bg-papadDeep rounded-xl py-2"><div class="text-[10px] caption !text-imliSoft">Sold</div><div class="display font-bold text-imli tabular">1,184</div></div>
+              </div>
+            </div>
+
+            <!-- Outlet card 2 -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-imli/10 mb-3">
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-xl bg-aam/20 grid place-items-center shrink-0">
+                  <svg class="text-aamDark" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="display font-bold text-imli text-lg">Gomti Nagar</div>
+                  <div class="text-xs text-imliSoft">Manager · Sunita Pandey</div>
+                  <div class="flex items-center gap-3 mt-2 text-xs">
+                    <span class="text-imliSoft">Last: 28 Mar</span>
+                    <span class="text-aamDark font-semibold tabular">−₹2,140 last month</span>
+                  </div>
+                </div>
+                <svg class="text-imliSoft/40" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+
+            <!-- Outlet card 3 -->
+            <div class="bg-white rounded-2xl p-4 border-2 border-imli/10 mb-6">
+              <div class="flex items-start gap-3">
+                <div class="w-12 h-12 rounded-xl bg-haldi/30 grid place-items-center shrink-0">
+                  <svg class="text-imli" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="display font-bold text-imli text-lg">Aliganj</div>
+                  <div class="text-xs text-imliSoft">Manager · Mohan Lal</div>
+                  <div class="flex items-center gap-3 mt-2 text-xs">
+                    <span class="text-imliSoft">Last: 18 Mar</span>
+                    <span class="text-mirch font-semibold tabular">−₹14,280 last month</span>
+                  </div>
+                </div>
+                <svg class="text-imliSoft/40" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+
+            <button class="cta-primary w-full flex items-center justify-center gap-2">
+              Continue with Hazratganj
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">03</div>
+        <div class="display font-bold text-lg text-imli">Pick Outlet</div>
+      </div>
+    </div>
+
+    <!-- ============= SCREEN 4: AUDIT CAPTURE (HERO) ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <!-- Sticky header w/ context -->
+          <div class="bg-imli text-papad px-5 py-4 sticky top-0 z-30">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <button class="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div>
+                  <div class="text-[10px] uppercase tracking-widest text-haldi font-bold">Hazratganj · 28 Apr</div>
+                  <div class="display font-bold text-base">Audit in progress</div>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg bg-white/10 grid place-items-center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+
+            <!-- progress -->
+            <div class="flex items-center gap-3 text-xs">
+              <div class="flex-1 h-2 bg-white/15 rounded-full overflow-hidden">
+                <div class="h-full bg-haldi rounded-full" style="width: 32%"></div>
+              </div>
+              <span class="tabular font-semibold">68 / 213</span>
+            </div>
+            <div class="text-[10px] text-papad/70 mt-1.5 desi">साथ में: Rakesh Verma (witness)</div>
+          </div>
+
+          <!-- Search / filter chip row -->
+          <div class="px-4 py-3 bg-papad sticky top-[112px] z-20 border-b border-imli/10">
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+              <div class="relative flex-1 min-w-[160px]">
+                <svg class="icon absolute left-3 top-2.5 text-imliSoft" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+                <input inputmode="search" placeholder="Search SKU…" class="w-full pl-10 pr-3 py-2 rounded-xl bg-papadDeep border border-imli/10 text-xs focus:outline-none focus:border-mirch">
+              </div>
+              <button class="chip bg-mirch text-white shrink-0">Pickle</button>
+              <button class="chip bg-papadDeep text-imli shrink-0">Papad</button>
+              <button class="chip bg-papadDeep text-imli shrink-0">Chips</button>
+            </div>
+          </div>
+
+          <!-- SKU list -->
+          <div class="px-4 py-4 space-y-3 pb-32">
+
+            <!-- Active counting card — Mango Pickle -->
+            <div class="bg-white rounded-jar p-5 border-2 border-mirch shadow-jar relative overflow-hidden">
+              <div class="absolute -top-4 -right-4 w-24 h-24 dotgrid text-haldi/40"></div>
+              <svg class="absolute top-3 right-3 text-haldi" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+
+              <div class="flex items-center gap-2 mb-1">
+                <span class="chip bg-aam/15 text-aamDark">Pickle</span>
+                <span class="text-[10px] text-imliSoft tabular">SKU #104</span>
+              </div>
+              <h3 class="display font-extrabold text-imli text-xl leading-tight">Mango Pickle 500g</h3>
+              <div class="text-xs text-imliSoft tabular">₹240 / unit</div>
+
+              <!-- Expected info row -->
+              <div class="grid grid-cols-3 gap-2 mt-4">
+                <div class="bg-papadDeep rounded-xl py-2 px-1 text-center">
+                  <div class="text-[9px] caption !text-imliSoft">Opening</div>
+                  <div class="display font-bold text-imli tabular text-base">18</div>
+                </div>
+                <div class="bg-papadDeep rounded-xl py-2 px-1 text-center">
+                  <div class="text-[9px] caption !text-imliSoft">+ Disp.</div>
+                  <div class="display font-bold text-imli tabular text-base">24</div>
+                </div>
+                <div class="bg-papadDeep rounded-xl py-2 px-1 text-center">
+                  <div class="text-[9px] caption !text-imliSoft">− Sold</div>
+                  <div class="display font-bold text-imli tabular text-base">18</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between mt-3 mb-3">
+                <span class="caption !text-imliSoft">Expected</span>
+                <span class="display font-bold text-imli tabular text-2xl">24<span class="text-sm text-imliSoft font-normal ml-1">pcs</span></span>
+              </div>
+
+              <!-- Counter -->
+              <div class="caption !text-imliSoft mb-2">Physical count</div>
+              <div class="flex items-center gap-3">
+                <button class="counter-btn minus">−</button>
+                <div class="flex-1 bg-papadDeep rounded-2xl py-3 text-center border-2 border-imli">
+                  <div class="display font-extrabold text-imli tabular text-4xl leading-none">22</div>
+                  <div class="text-[10px] caption !text-imliSoft mt-1">pieces</div>
+                </div>
+                <button class="counter-btn plus">+</button>
+              </div>
+
+              <!-- Live variance — RED because shortfall -->
+              <div class="mt-4 bg-mirch/10 border border-mirch/30 rounded-2xl p-3 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-mirch grid place-items-center text-white">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                </div>
+                <div class="flex-1">
+                  <div class="text-xs text-mirch font-semibold">Shortfall · 2 pcs</div>
+                  <div class="display font-bold text-mirch tabular text-lg leading-tight">−₹480</div>
+                </div>
+                <button class="text-xs font-semibold text-mirch underline desi">Damage?</button>
+              </div>
+
+              <div class="flex items-center justify-between mt-4">
+                <button class="text-xs text-imliSoft font-medium flex items-center gap-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+                  Add note
+                </button>
+                <button class="bg-aam text-white font-bold text-sm px-5 py-2.5 rounded-xl flex items-center gap-1.5" style="box-shadow: 0 3px 0 0 #4F8A3D;">
+                  Confirm
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Already counted — collapsed -->
+            <div class="bg-white rounded-2xl p-3.5 border-2 border-aam/30 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-aam grid place-items-center shrink-0 text-white">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-imli text-sm truncate">Lemon Pickle 250g</div>
+                <div class="text-[11px] text-imliSoft">Counted 12 · Expected 12 · OK</div>
+              </div>
+              <div class="text-aamDark font-bold tabular text-sm">₹0</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-3.5 border-2 border-mirch/30 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-mirch grid place-items-center shrink-0 text-white">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-imli text-sm truncate">Garlic Pickle 500g</div>
+                <div class="text-[11px] text-imliSoft">Counted 14 · Expected 18 · 4 short</div>
+              </div>
+              <div class="text-mirch font-bold tabular text-sm">−₹720</div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-3.5 border-2 border-imli/10 flex items-center gap-3 opacity-60">
+              <div class="w-9 h-9 rounded-lg bg-papadDeep grid place-items-center shrink-0 text-imliSoft">
+                <span class="display font-bold text-sm">68</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="font-semibold text-imli text-sm truncate">Red Chilli Pickle 250g</div>
+                <div class="text-[11px] text-imliSoft">Up next · Expected 32</div>
+              </div>
+              <svg class="text-imliSoft/60" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+
+          </div>
+
+          <!-- Sticky footer running total -->
+          <div class="absolute bottom-0 inset-x-0 bg-papad border-t-2 border-imli/15 px-5 py-3 flex items-center gap-3">
+            <div class="flex-1">
+              <div class="text-[10px] caption !text-imliSoft">Running shortfall</div>
+              <div class="display font-extrabold text-mirch tabular text-xl leading-none">−₹1,200</div>
+            </div>
+            <button class="bg-imli text-papad px-5 py-3 rounded-xl font-bold text-sm flex items-center gap-2">
+              Pause
+            </button>
+            <button class="cta-primary !py-3 !px-5 !text-sm">Submit</button>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">04 · The hero screen</div>
+        <div class="display font-bold text-lg text-imli">Audit Capture (live)</div>
+      </div>
+    </div>
+
+    <!-- ============= SCREEN 5: SIGN-OFF SUMMARY ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <div class="px-5 pt-4 pb-24 relative">
+            <div class="absolute top-0 right-0 w-40 h-40 dotgrid text-aam"></div>
+            <svg class="absolute top-12 left-2 text-haldi" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+
+            <div class="text-center mt-4 mb-6 relative">
+              <div class="w-20 h-20 rounded-full bg-aam mx-auto grid place-items-center mb-4 shadow-jar">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <h2 class="display font-extrabold text-imli text-3xl leading-tight">Audit done!</h2>
+              <p class="desi text-aamDark text-base font-semibold mt-1">Shabaash. Ab sign-off karte hain.</p>
+              <div class="squiggle w-32 mx-auto mt-4 opacity-70"></div>
+            </div>
+
+            <!-- Big shortfall card -->
+            <div class="rounded-jar bg-imli text-papad p-5 mb-5 relative overflow-hidden">
+              <div class="absolute -bottom-6 -right-6 w-32 h-32 dotgrid text-haldi/30"></div>
+              <div class="text-[11px] uppercase tracking-widest text-haldi font-bold">Total Shortfall · April</div>
+              <div class="display font-extrabold tabular leading-none mt-2" style="font-size: 56px;">₹8,420</div>
+              <div class="flex items-center gap-2 mt-3 text-xs">
+                <span class="chip bg-haldi text-imli">14 SKUs short</span>
+                <span class="chip bg-papad/15 text-papad">2 OK</span>
+                <span class="chip bg-aam text-white">192 match</span>
+              </div>
+            </div>
+
+            <!-- Category breakdown -->
+            <div class="caption mb-3">Where it leaked</div>
+            <div class="bg-white rounded-2xl p-4 border-2 border-imli/10 mb-4 space-y-3">
+              <div>
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-semibold text-imli">Pickle</span>
+                  <span class="tabular text-mirch font-bold">−₹6,200</span>
+                </div>
+                <div class="var-bar"><span class="bg-mirch" style="width:74%"></span></div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-semibold text-imli">Papad</span>
+                  <span class="tabular text-mirch font-bold">−₹1,440</span>
+                </div>
+                <div class="var-bar"><span class="bg-mirch" style="width:17%"></span></div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-semibold text-imli">Chips</span>
+                  <span class="tabular text-mirch font-bold">−₹780</span>
+                </div>
+                <div class="var-bar"><span class="bg-mirch" style="width:9%"></span></div>
+              </div>
+            </div>
+
+            <!-- Top offenders -->
+            <div class="caption mb-3">Top 3 missing</div>
+            <div class="space-y-2 mb-5">
+              <div class="bg-white rounded-xl p-3 border-2 border-imli/10 flex items-center gap-3">
+                <div class="display font-extrabold text-mirch text-2xl tabular w-8">1</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Mango Pickle 500g</div><div class="text-[11px] text-imliSoft">8 short · ₹240 each</div></div>
+                <div class="tabular font-bold text-mirch">−₹1,920</div>
+              </div>
+              <div class="bg-white rounded-xl p-3 border-2 border-imli/10 flex items-center gap-3">
+                <div class="display font-extrabold text-mirch text-2xl tabular w-8">2</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Garlic Pickle 500g</div><div class="text-[11px] text-imliSoft">4 short · ₹180 each</div></div>
+                <div class="tabular font-bold text-mirch">−₹720</div>
+              </div>
+              <div class="bg-white rounded-xl p-3 border-2 border-imli/10 flex items-center gap-3">
+                <div class="display font-extrabold text-mirch text-2xl tabular w-8">3</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Lemon Pickle 1kg</div><div class="text-[11px] text-imliSoft">3 short · ₹220 each</div></div>
+                <div class="tabular font-bold text-mirch">−₹660</div>
+              </div>
+            </div>
+
+            <!-- Signatures -->
+            <div class="caption mb-3">Both parties confirm</div>
+            <div class="grid grid-cols-2 gap-3 mb-5">
+              <div class="bg-papadDeep rounded-2xl p-3 border-2 border-dashed border-imli/30">
+                <div class="text-[10px] caption !text-imliSoft">HQ Auditor</div>
+                <div class="font-semibold text-imli text-sm mt-1">Kanav A.</div>
+                <div class="h-12 grid place-items-center text-imliSoft/40 text-[10px] desi mt-1">Tap to sign</div>
+              </div>
+              <div class="bg-papadDeep rounded-2xl p-3 border-2 border-dashed border-imli/30">
+                <div class="text-[10px] caption !text-imliSoft">Outlet Witness</div>
+                <div class="font-semibold text-imli text-sm mt-1">Rakesh V.</div>
+                <div class="h-12 grid place-items-center text-imliSoft/40 text-[10px] desi mt-1">Tap to sign</div>
+              </div>
+            </div>
+
+            <button class="cta-primary w-full flex items-center justify-center gap-2">
+              Sign &amp; Submit
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+            </button>
+            <button class="w-full mt-2 py-3 text-imliSoft text-sm font-semibold">Save as draft</button>
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">05</div>
+        <div class="display font-bold text-lg text-imli">Sign-off &amp; Submit</div>
+      </div>
+    </div>
+
+    <!-- ============= SCREEN 6: SKU HEAT MAP ============= -->
+    <div class="space-y-4">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="status-bar"><span>9:41</span><span>●●●●●</span></div>
+
+          <div class="px-5 pt-3 pb-24">
+            <div class="flex items-center gap-3 mb-5">
+              <button class="w-10 h-10 rounded-xl bg-white border-2 border-imli/15 grid place-items-center">
+                <svg class="icon text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </button>
+              <div class="flex-1">
+                <p class="caption">Reports</p>
+                <h2 class="display font-extrabold text-imli text-xl leading-tight">SKU Heat Map</h2>
+              </div>
+              <button class="w-10 h-10 rounded-xl bg-haldi grid place-items-center">
+                <svg class="icon text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              </button>
+            </div>
+
+            <!-- Time range -->
+            <div class="flex items-center gap-2 mb-4 bg-white rounded-2xl p-1 border-2 border-imli/10">
+              <button class="flex-1 py-2 text-xs font-semibold rounded-xl text-imliSoft">Week</button>
+              <button class="flex-1 py-2 text-xs font-bold rounded-xl bg-imli text-papad">Month</button>
+              <button class="flex-1 py-2 text-xs font-semibold rounded-xl text-imliSoft">Quarter</button>
+              <button class="flex-1 py-2 text-xs font-semibold rounded-xl text-imliSoft">YTD</button>
+            </div>
+
+            <!-- Insight callout -->
+            <div class="rounded-2xl bg-haldi/30 border-2 border-haldi p-4 mb-5">
+              <div class="flex items-start gap-2">
+                <svg class="text-imli mt-0.5 shrink-0" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/><path d="M12 8v4M12 16h.01"/></svg>
+                <div>
+                  <div class="display font-bold text-imli text-sm leading-tight">Mango Pickle is the boss-level loss.</div>
+                  <p class="desi text-imliSoft text-xs mt-0.5">Short at all 3 outlets — likely POS issue, not theft. Check billing setup before blaming staff.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Heatmap grid -->
+            <div class="caption mb-2">Variance by SKU × Outlet</div>
+            <div class="bg-white rounded-2xl p-3 border-2 border-imli/10 mb-5">
+              <!-- header row -->
+              <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 text-[9px] caption !text-imliSoft mb-2 items-end">
+                <span></span>
+                <span class="text-center" style="writing-mode: vertical-rl; transform: rotate(180deg); height: 50px;">Hazratganj</span>
+                <span class="text-center" style="writing-mode: vertical-rl; transform: rotate(180deg); height: 50px;">Gomti N.</span>
+                <span class="text-center" style="writing-mode: vertical-rl; transform: rotate(180deg); height: 50px;">Aliganj</span>
+              </div>
+              <!-- rows -->
+              <div class="space-y-1">
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Mango Pickle</span>
+                  <div class="heat bg-mirch text-white tabular">−8</div>
+                  <div class="heat bg-mirch text-white tabular">−6</div>
+                  <div class="heat bg-mirchDark text-white tabular">−12</div>
+                </div>
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Garlic Pickle</span>
+                  <div class="heat bg-mirch/60 text-white tabular">−4</div>
+                  <div class="heat bg-aam/30 text-imli tabular">−1</div>
+                  <div class="heat bg-mirch text-white tabular">−7</div>
+                </div>
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Lemon Pickle</span>
+                  <div class="heat bg-aam/30 text-imli tabular">−1</div>
+                  <div class="heat bg-aam text-white tabular">0</div>
+                  <div class="heat bg-mirch/60 text-white tabular">−3</div>
+                </div>
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Red Chilli Pickle</span>
+                  <div class="heat bg-aam text-white tabular">+1</div>
+                  <div class="heat bg-aam/30 text-imli tabular">−1</div>
+                  <div class="heat bg-mirch/60 text-white tabular">−4</div>
+                </div>
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Bael Candy</span>
+                  <div class="heat bg-aam text-white tabular">0</div>
+                  <div class="heat bg-aam text-white tabular">0</div>
+                  <div class="heat bg-aam/30 text-imli tabular">−1</div>
+                </div>
+                <div class="grid grid-cols-[1fr_repeat(3,minmax(0,40px))] gap-1 items-center">
+                  <span class="text-[11px] font-semibold text-imli truncate">Methi Papad</span>
+                  <div class="heat bg-mirch/60 text-white tabular">−3</div>
+                  <div class="heat bg-aam/30 text-imli tabular">−1</div>
+                  <div class="heat bg-mirch/60 text-white tabular">−4</div>
+                </div>
+              </div>
+
+              <!-- legend -->
+              <div class="flex items-center justify-between mt-4 pt-3 border-t border-imli/10 text-[10px] text-imliSoft">
+                <span class="caption !text-imliSoft">Loss scale</span>
+                <div class="flex items-center gap-1">
+                  <div class="w-4 h-4 rounded bg-aam"></div>
+                  <div class="w-4 h-4 rounded bg-aam/30"></div>
+                  <div class="w-4 h-4 rounded bg-mirch/60"></div>
+                  <div class="w-4 h-4 rounded bg-mirch"></div>
+                  <div class="w-4 h-4 rounded bg-mirchDark"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Outlet leaderboard -->
+            <div class="caption mb-3">Outlet Leaderboard</div>
+            <div class="space-y-2">
+              <div class="bg-white rounded-xl p-3 border-2 border-mirch flex items-center gap-3">
+                <div class="display font-extrabold text-mirch text-2xl tabular w-7">1</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Aliganj</div><div class="text-[11px] text-imliSoft">31 SKUs short · 14% of dispatch</div></div>
+                <div class="tabular font-bold text-mirch">−₹14,280</div>
+              </div>
+              <div class="bg-white rounded-xl p-3 border-2 border-imli/10 flex items-center gap-3">
+                <div class="display font-extrabold text-imliSoft text-2xl tabular w-7">2</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Hazratganj</div><div class="text-[11px] text-imliSoft">14 SKUs short · 8% of dispatch</div></div>
+                <div class="tabular font-bold text-mirch">−₹8,420</div>
+              </div>
+              <div class="bg-white rounded-xl p-3 border-2 border-imli/10 flex items-center gap-3">
+                <div class="display font-extrabold text-imliSoft text-2xl tabular w-7">3</div>
+                <div class="flex-1"><div class="font-semibold text-imli text-sm">Gomti Nagar</div><div class="text-[11px] text-imliSoft">5 SKUs short · 2% of dispatch</div></div>
+                <div class="tabular font-bold text-aamDark">−₹2,140</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="caption">06</div>
+        <div class="display font-bold text-lg text-imli">SKU Heat Map &amp; Leaderboard</div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ====================== SYSTEM PANEL ====================== -->
+<section class="bg-imli text-papad py-20 mt-10">
+  <div class="max-w-7xl mx-auto px-8">
+    <div class="flex items-center gap-3 mb-3 text-haldi">
+      <span class="caption !text-haldi">Design System</span>
+      <span class="h-px flex-1 bg-haldi/30"></span>
+    </div>
+    <h2 class="display text-4xl font-extrabold mb-2">Built from your brand book.</h2>
+    <p class="text-papad/80 max-w-2xl mb-12">Every color, font, and motif in the screens above traces back to one page of the Aroura Achar style guide.</p>
+
+    <div class="grid md:grid-cols-3 gap-6">
+
+      <!-- Colors -->
+      <div class="bg-papad text-imli rounded-jar p-6">
+        <div class="caption mb-3">Palette</div>
+        <h3 class="display font-extrabold text-2xl mb-4">From the jar.</h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-mirch"></span><div><div class="font-bold">Lal Mirch Red</div><div class="text-xs text-imliSoft tabular">#E63946 · CTA, alerts, shortfall</div></div></div>
+          <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-haldi"></span><div><div class="font-bold">Amritsar Yellow</div><div class="text-xs text-imliSoft tabular">#FFCE3D · Highlights, sparkle</div></div></div>
+          <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-aam"></span><div><div class="font-bold">Green Mango</div><div class="text-xs text-imliSoft tabular">#6CA653 · Success, on-track</div></div></div>
+          <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-imli"></span><div><div class="font-bold">Tamarind Brown</div><div class="text-xs text-papad/60 tabular">#4B2E2E · Body text, surfaces</div></div></div>
+          <div class="flex items-center gap-3"><span class="w-10 h-10 rounded-xl bg-papadDeep border border-imli/15"></span><div><div class="font-bold">Papad White</div><div class="text-xs text-imliSoft tabular">#FAF9F6 · Background</div></div></div>
+        </div>
+      </div>
+
+      <!-- Type -->
+      <div class="bg-papad text-imli rounded-jar p-6">
+        <div class="caption mb-3">Type</div>
+        <h3 class="display font-extrabold text-2xl mb-4">Bold heads, soft body, desi accents.</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="text-[10px] caption">Display · Bricolage Grotesque <span class="text-imliSoft/60">(Hagrid stand-in)</span></div>
+            <div class="display font-extrabold text-4xl text-mirch leading-none mt-1">AUDIT BABA</div>
+          </div>
+          <div>
+            <div class="text-[10px] caption">Body · Poppins</div>
+            <p class="text-base mt-1">The quick brown fox jumps over the lazy dog.</p>
+          </div>
+          <div>
+            <div class="text-[10px] caption">Desi accent · Baloo 2</div>
+            <p class="desi text-2xl text-aamDark font-bold mt-1">हर गिनती का हिसाब</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice -->
+      <div class="bg-papad text-imli rounded-jar p-6">
+        <div class="caption mb-3">Voice</div>
+        <h3 class="display font-extrabold text-2xl mb-4">Dadi with a smartphone.</h3>
+        <div class="space-y-3">
+          <div class="bg-aam/15 border-2 border-aam/30 rounded-2xl p-3">
+            <div class="text-[10px] caption !text-aamDark">Do</div>
+            <p class="desi text-sm mt-1">"Aaj ka audit chalu karein? Saath mein gintee karte hain."</p>
+          </div>
+          <div class="bg-mirch/10 border-2 border-mirch/30 rounded-2xl p-3">
+            <div class="text-[10px] caption !text-mirch">Don't</div>
+            <p class="text-sm mt-1 text-imliSoft">"Initiate inventory variance reconciliation procedure."</p>
+          </div>
+          <div class="bg-papadDeep rounded-2xl p-3 mt-3">
+            <div class="text-[10px] caption">Tone rules</div>
+            <ul class="text-xs mt-1 space-y-1 text-imliSoft">
+              <li>· Hinglish ok in greetings, English in numbers</li>
+              <li>· Never sterile, never lecturing</li>
+              <li>· Praise on success, gentle on shortfall</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Motifs row -->
+    <div class="mt-8 grid md:grid-cols-4 gap-4">
+      <div class="bg-papad text-imli rounded-2xl p-5 flex items-center gap-3">
+        <svg class="text-haldi" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+        <div><div class="caption">Motif 01</div><div class="font-bold text-sm">Yellow sparkle</div></div>
+      </div>
+      <div class="bg-papad text-imli rounded-2xl p-5 flex items-center gap-3">
+        <div class="w-9 h-9 dotgrid text-mirch"></div>
+        <div><div class="caption">Motif 02</div><div class="font-bold text-sm">Dot grid</div></div>
+      </div>
+      <div class="bg-papad text-imli rounded-2xl p-5 flex items-center gap-3">
+        <div class="squiggle w-12"></div>
+        <div><div class="caption">Motif 03</div><div class="font-bold text-sm">Hand-drawn squiggle</div></div>
+      </div>
+      <div class="bg-papad text-imli rounded-2xl p-5 flex items-center gap-3">
+        <div class="badge !text-[6px] !px-2 !py-1">
+          <div class="text-[5px]">— LUCKNOW'S —</div>
+          <div class="text-[10px] display font-bold">AROURA</div>
+          <div class="text-[5px]">— SINCE 1944 —</div>
+        </div>
+        <div><div class="caption">Motif 04</div><div class="font-bold text-sm">Label badge</div></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====================== UX RULES ====================== -->
+<section class="max-w-7xl mx-auto px-8 py-16">
+  <div class="flex items-center gap-3 mb-3">
+    <span class="caption">UX Rules baked in</span>
+    <span class="h-px flex-1 bg-imli/20"></span>
+  </div>
+  <h2 class="display text-4xl font-extrabold text-imli mb-12">Why this works at the shelf.</h2>
+
+  <div class="grid md:grid-cols-3 gap-5">
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-mirch grid place-items-center text-white mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">One SKU at a time</h3>
+      <p class="text-sm text-imliSoft mt-1">Big single-item card replaces a 213-row spreadsheet. Counter buttons are 56×56pt — tappable with shelf-dust on fingers.</p>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-haldi grid place-items-center text-imli mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">Variance shown live</h3>
+      <p class="text-sm text-imliSoft mt-1">As soon as physical_qty is entered, the red callout shows ₹ shortfall. Witness can challenge the number before submit, not next day.</p>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-aam grid place-items-center text-white mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">Two-party sign-off built in</h3>
+      <p class="text-sm text-imliSoft mt-1">Both signatures on the same screen — no "I'll re-key it tomorrow" gap. PDF summary auto-emails to both.</p>
+    </div>
+
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-imli grid place-items-center text-haldi mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">Mobile-first, not mobile-also</h3>
+      <p class="text-sm text-imliSoft mt-1">Designed for 375px holding-the-phone-with-pickle-fingers. Bottom CTA always reachable with thumb. Numeric keyboard on count.</p>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-mirch grid place-items-center text-haldi mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">Heat map separates signal from noise</h3>
+      <p class="text-sm text-imliSoft mt-1">If a SKU is short across all outlets → POS issue, not theft. The grid makes that obvious in 2 seconds, not 2 hours of Excel.</p>
+    </div>
+    <div class="bg-white rounded-2xl p-5 border-2 border-imli/10">
+      <div class="w-10 h-10 rounded-xl bg-haldi grid place-items-center text-imli mb-3">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 109-9"/><path d="M3 4v5h5"/></svg>
+      </div>
+      <h3 class="display font-bold text-lg text-imli">A11y &amp; performance honest</h3>
+      <p class="text-sm text-imliSoft mt-1">4.5:1 contrast on Tamarind on Papad White, 44pt+ targets, focus rings, prefers-reduced-motion respected, tabular numerals on every count.</p>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-imli text-papad/70 py-10 text-center text-sm">
+  <div class="badge !bg-papad !text-mirch !shadow-none mb-4 mx-auto inline-block" style="box-shadow: 0 0 0 2px #4B2E2E;">
+    <div class="text-[7px] tracking-[.2em]">— LUCKNOW'S —</div>
+    <div class="text-sm display font-bold">AUDIT BABA</div>
+    <div class="text-[7px] tracking-[.2em]">— SINCE 2026 —</div>
+  </div>
+  <div class="desi text-haldi text-base">हर गिनती का हिसाब</div>
+  <div class="mt-2 text-papad/50 text-xs">A brand-aligned UI/UX proposal · Aroura Achar internal tool</div>
+</footer>
+
+</body>
+</html>

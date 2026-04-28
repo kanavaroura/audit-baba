@@ -1,0 +1,214 @@
+sku_id,item_name,unit,sale_price,category,active
+SKU-0001,420 Chana Papad 200g,piece,84.0,Papad,true
+SKU-0002,420 Punjabi Masala Papad 200g,piece,92.38,Papad,true
+SKU-0003,"50g,100g&250g Goli Dana  Bottles",piece,0.0,Other,true
+SKU-0004,6pc Assorted Pickles/chutney Combo Jar (50g),piece,210.0,Pickle,true
+SKU-0005,Aam Papad Bites Plain Pouch (150g),piece,85.0,Papad,true
+SKU-0006,Aam Papad Bites Plain Pouch (250g),piece,130.0,Papad,true
+SKU-0007,Aam Papad Bites Plain Pouch (500g),piece,250.0,Papad,true
+SKU-0008,Adrak Pickle (Kg),kg,340.0,Pickle,true
+SKU-0009,Aloo Papad Box (250g),piece,0.0,Papad,true
+SKU-0010,Ambar Pickle(Kg),kg,320.0,Pickle,true
+SKU-0011,Amla Anardana Bottle (125g),piece,110.0,Other,true
+SKU-0012,Amla Candy (Kg),kg,460.0,Other,true
+SKU-0013,Amla Candy Anardana(Kg),kg,476.19,Other,true
+SKU-0014,Amla Candy Bottle (250g),piece,180.0,Other,true
+SKU-0015,Amla Candy Khatti Meethi (Kg),kg,460.0,Other,true
+SKU-0016,Amla Chatpati Candy Bottle (250g),piece,180.0,Other,true
+SKU-0017,Amla Kaju Barfi Bar-200g (N ),piece,110.0,Sweets,true
+SKU-0018,Amla Murabba (Kg),kg,244.0,Other,true
+SKU-0019,Amla Murabba Bottle (450g),piece,145.0,Other,true
+SKU-0020,AMLA MURABBA DRY (KG ),kg,400.0,Other,true
+SKU-0021,Amla Murabba Jar (1kg),piece,285.0,Other,true
+SKU-0022,Amla Pickle (Kg),kg,320.0,Pickle,true
+SKU-0023,Amla Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0024,Amla Pickle Bottle (400g),piece,175.0,Pickle,true
+SKU-0025,Amla Pickle Jar (800g),piece,295.0,Pickle,true
+SKU-0026,Anardana Goli 220g,piece,143.0,Other,true
+SKU-0027,Apple Ciderplus Vinegar,piece,245.0,Other,true
+SKU-0028,Apple Murabba (Kg),kg,284.0,Other,true
+SKU-0029,Apple Murabba Jar (1 Kg),kg,305.0,Other,true
+SKU-0030,Aroura Amla Anardana (Kg ),kg,500.0,Other,true
+SKU-0031,Aroura Amla Barfi 200G,piece,110.0,Sweets,true
+SKU-0032,Aroura Amla Laddoo 200g,piece,110.0,Other,true
+SKU-0033,Aroura Gulab E Azam (Rose Syrup) 200ml,piece,70.0,Other,true
+SKU-0034,Aroura Khus Sharbat Bottle (200ml),piece,70.0,Other,true
+SKU-0035,Aroura Mango Baar 200g,piece,125.0,Other,true
+SKU-0036,Aroura Masala Jeera (Chat Pata) 200ml,piece,70.0,Spices,true
+SKU-0037,Aroura Nimbu Masti (Sweet Lemon Syrup)200ml,piece,70.0,Sweets,true
+SKU-0038,Aroura Santra Mantra (Orange Syrup) 200ml,piece,70.0,Other,true
+SKU-0039,Aroura's Mix Fruit Jam (500g),piece,0.0,Condiments,true
+SKU-0040,Bael Candy Bottle (250g),piece,180.0,Other,true
+SKU-0041,Bamboo Murabba (Kg),kg,284.0,Other,true
+SKU-0042,BAMBOO PICKLE (KG),kg,400.0,Pickle,true
+SKU-0043,Bari Mashala (Kg),kg,340.0,Other,true
+SKU-0044,Bel Candy(Kg),kg,460.0,Other,true
+SKU-0045,Bel Murabba (Kg),kg,244.0,Other,true
+SKU-0046,Bel Murabba Jar (1Kg),piece,285.0,Other,true
+SKU-0047,Black Salt Pouch(100g),piece,10.0,Other,true
+SKU-0048,Bom Kala Khatta 220g,piece,143.0,Flour,true
+SKU-0049,Carrot Murabba(Kg),kg,244.0,Other,true
+SKU-0050,Chai Masala Pouch(25g),piece,50.0,Spices,true
+SKU-0051,Choti Bari Mashala (Kg),kg,320.0,Other,true
+SKU-0052,Dela Pickle (Kg),kg,400.0,Pickle,true
+SKU-0053,Dela Pickle Bottle (200g),piece,115.0,Pickle,true
+SKU-0054,Dela Pickle Bottle.(400g),piece,215.0,Pickle,true
+SKU-0055,DELA PICKLE JAR (800G),piece,355.0,Pickle,true
+SKU-0056,Dilkhus Anardana Goli (100g),piece,70.0,Other,true
+SKU-0057,Dilkhush Anardana Goli (250g),piece,140.0,Other,true
+SKU-0058,Dry Mango Pickle (Kg),kg,340.0,Pickle,true
+SKU-0059,Gajar Gobhi Shaljam Meethi Mixed(Kg),kg,320.0,Condiments,true
+SKU-0060,Gajar Khatta Pickle(Kg),kg,320.0,Pickle,true
+SKU-0061,Gajar Khatti Pickle Bottle (400gm),piece,175.0,Pickle,true
+SKU-0062,Gajar Pickle (Kg),kg,320.0,Pickle,true
+SKU-0063,Garam Masala (25gm.),piece,40.0,Spices,true
+SKU-0064,Garlic Chutney Bottle (200g),piece,120.0,Chutney,true
+SKU-0065,Garlic Chutney(Kg),kg,440.0,Chutney,true
+SKU-0066,Garlic Ginger Green Chilli (Kg),kg,400.0,Other,true
+SKU-0067,Garlic Ginger Green Chilli Jar (800G),piece,355.0,Other,true
+SKU-0068,Garlic Ginger Green Chilli Pickle Bottle(400g),piece,215.0,Pickle,true
+SKU-0069,Garlic Pickle Bottle (200g),piece,120.0,Pickle,true
+SKU-0070,Garlic Pickle Jar (800g),piece,385.0,Pickle,true
+SKU-0071,Ginger Candy (Kg),kg,460.0,Other,true
+SKU-0072,Ginger Garlic Green Chilli (200grm),piece,115.0,Other,true
+SKU-0073,Ginger Garlic Green Chilli Pet Jar (50g),piece,35.0,Other,true
+SKU-0074,Ginger Pickle (Kg),kg,340.0,Pickle,true
+SKU-0075,Ginger Pickle Bottle (200g),piece,115.0,Pickle,true
+SKU-0076,Ginger Pickle Bottle (400g),piece,215.0,Pickle,true
+SKU-0077,Ginger Pickle Jar (800g),piece,355.0,Pickle,true
+SKU-0078,Gobhi Gajar Shaljam Mixed (400g),piece,175.0,Condiments,true
+SKU-0079,Gobhi Pickle Khatta (Kg),kg,320.0,Pickle,true
+SKU-0080,Green Chilli (Biryani) Kg,kg,180.0,Other,true
+SKU-0081,Green Chilli Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0082,GREEN CHILLI PICKLE JAR (800G),piece,295.0,Pickle,true
+SKU-0083,Green Chillie Pickle (Kg),kg,320.0,Pickle,true
+SKU-0084,Green Chillie Pickle Bottle(400 G),piece,175.0,Pickle,true
+SKU-0085,Gulkand Murabba (Kg),kg,190.0,Other,true
+SKU-0086,Hari Bhari Pickle (Kg),kg,400.0,Pickle,true
+SKU-0087,Hing Peda (100g),piece,70.0,Other,true
+SKU-0088,Hing Peda Churan Goli (100g),piece,70.0,Other,true
+SKU-0089,Hing Peda Churan Goli (250g),piece,140.0,Other,true
+SKU-0090,Hydrabadi Mukhwas 220g,piece,183.0,Other,true
+SKU-0091,Idli Mix (500g),piece,95.24,Other,true
+SKU-0092,Imli Chatkara 200g,piece,143.0,Other,true
+SKU-0093,Imli Laddu (100g),piece,70.0,Other,true
+SKU-0094,Imli Laddu (250g),piece,140.0,Other,true
+SKU-0095,Imli Modak 220 Gm,piece,140.0,Other,true
+SKU-0096,Jamun Vinegar,piece,230.0,Condiments,true
+SKU-0097,Janta Har Murabba (Kg),kg,284.0,Other,true
+SKU-0098,Jimikand Pickle (Kg),kg,340.0,Pickle,true
+SKU-0099,Jujubes 220g,piece,163.0,Other,true
+SKU-0100,Kachha Aam Papad Bites Pouch (150g),piece,85.0,Papad,true
+SKU-0101,Kachha Aam Papad Bites Pouch (250g),piece,130.0,Papad,true
+SKU-0102,Kachha Aam Papad Bites Pouch (500g),piece,250.0,Papad,true
+SKU-0103,Kala Khatta Aam Papad Bites Pouch (150g),piece,85.0,Papad,true
+SKU-0104,Kala Khatta Aam Papad Bites Pouch (250g),piece,130.0,Papad,true
+SKU-0105,Kala Khatta Aam Papad Bites Pouch (500g),piece,250.0,Papad,true
+SKU-0106,Karela Pickle (Kg),kg,320.0,Pickle,true
+SKU-0107,Karela Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0108,Karela Pickle Bottle (400g),piece,175.0,Pickle,true
+SKU-0109,Karela Pickle Jar (800g),piece,295.0,Pickle,true
+SKU-0110,Karonda Cheri (Kg),kg,264.0,Other,true
+SKU-0111,Karonda Pickle Bottle (200g),piece,115.0,Pickle,true
+SKU-0112,Karonda Pickle Bottle (400g),piece,215.0,Pickle,true
+SKU-0113,KARONDA PICKLE JAR (800G),piece,330.0,Pickle,true
+SKU-0114,Karonda Pickle(Kg),kg,400.0,Pickle,true
+SKU-0115,Kathal Pickle (Kg),kg,340.0,Pickle,true
+SKU-0116,Kathal Pickle Bottle (200g),piece,105.0,Pickle,true
+SKU-0117,Kathal Pickle Bottle(400g),piece,195.0,Pickle,true
+SKU-0118,KATHAL PICKLE JAR (800G),piece,310.0,Pickle,true
+SKU-0119,Khaman (Dhokla) Mix (500g),piece,121.0,Other,true
+SKU-0120,Khus Mukhwas 220g,piece,170.0,Other,true
+SKU-0121,Kitchen King (50g),piece,45.0,Other,true
+SKU-0122,Kpr Moong Sada Papad (200g),piece,61.0,Papad,true
+SKU-0123,Kpr Punjabi Small (200g),piece,64.76,Other,true
+SKU-0124,Kpr Sada 200g,piece,97.0,Other,true
+SKU-0125,Lasora pickle(400g),piece,215.0,Pickle,true
+SKU-0126,Lasora Pickle(Kg.),kg,400.0,Pickle,true
+SKU-0127,Lehsan Pickle (Kg),kg,440.0,Pickle,true
+SKU-0128,Lehsan Pickle Bottle (400g),piece,230.0,Pickle,true
+SKU-0129,Lemon Chutney (Kg),kg,320.0,Chutney,true
+SKU-0130,Lemon Ginger Green Chilie ( Lemon Juice) (Kg),kg,400.0,Other,true
+SKU-0131,Lemon Pickle (Kg),kg,320.0,Pickle,true
+SKU-0132,Lemon Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0133,Lemon Pickle Bottle (400g),piece,175.0,Pickle,true
+SKU-0135,LEMON PICKLE JAR (800G),piece,295.0,Pickle,true
+SKU-0136,Lemon Pickle Juice Kg,kg,400.0,Pickle,true
+SKU-0137,Mango Heeng Pickle (Kg),kg,0.0,Pickle,true
+SKU-0138,Mango Heeng Pickle Bottle (200g),piece,195.0,Pickle,true
+SKU-0139,Mango Heeng Pickle Bottle (400g),piece,195.0,Pickle,true
+SKU-0140,Mango Heeng Pickle Jar (800g),piece,305.0,Pickle,true
+SKU-0141,Mango Heeng Pickle(Kg),kg,340.0,Pickle,true
+SKU-0142,Mango Lacha Pickle (Kg),kg,320.0,Pickle,true
+SKU-0143,Mango Pickle (800g) Tin,piece,295.0,Pickle,true
+SKU-0144,Mango Pickle (Kg),kg,320.0,Pickle,true
+SKU-0145,Mango Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0146,Mango Pickle Bottle(400g),piece,175.0,Pickle,true
+SKU-0147,MANGO PICKLE JAR (800G),piece,295.0,Pickle,true
+SKU-0148,Mango Pickle Pet Jar (50g),piece,35.0,Pickle,true
+SKU-0149,Mango Sabut Masala Pickle  (Kg),kg,340.0,Pickle,true
+SKU-0150,Mango Sabut Masala Pickle (Kg),kg,0.0,Pickle,true
+SKU-0151,Mango Sabut Masala Pickle Bottle (200g),piece,105.0,Pickle,true
+SKU-0152,Mango Sabut Masala Pickle Bottle (400g),piece,195.0,Pickle,true
+SKU-0153,MANGO SABUT MASALA PICKLE JAR (800G),piece,310.0,Pickle,true
+SKU-0154,Mango Slice (100g),piece,70.0,Other,true
+SKU-0155,Mango Slice (200g),piece,140.0,Other,true
+SKU-0156,Meat Masala (50gm.),piece,40.0,Spices,true
+SKU-0157,Missi Roti Atta (500g),piece,0.0,Flour,true
+SKU-0158,Mixed Pickle (Kg),kg,320.0,Pickle,true
+SKU-0159,Mixed Pickle Bottle (200g),piece,95.0,Pickle,true
+SKU-0160,Mixed Pickle Bottle (400g),piece,175.0,Pickle,true
+SKU-0161,Mixed Pickle Jar (800g),piece,295.0,Pickle,true
+SKU-0162,Mixed Pickle Pet Jar (50g),piece,35.0,Pickle,true
+SKU-0163,Mixed Pickle Tin (850g),piece,340.0,Pickle,true
+SKU-0164,Moong Bhajia 400 Gm,piece,138.0,Pulses,true
+SKU-0165,Moong Sadi (Kg),kg,300.0,Pulses,true
+SKU-0166,Moong Tawa Chilla Mix 400 Gm,piece,105.71,Pulses,true
+SKU-0167,Nagpuri Santra 220g,piece,134.0,Other,true
+SKU-0168,Navratan Chutney (500gm.) Bottle,piece,205.0,Chutney,true
+SKU-0169,Navratan Chutney (Kg),kg,320.0,Chutney,true
+SKU-0170,Navratan Chutney Bottle (250g),piece,115.0,Chutney,true
+SKU-0171,Navratan Chutney Jar(1kg),piece,345.0,Chutney,true
+SKU-0172,Orus Bharwa Karela Masala(50g),piece,30.0,Spices,true
+SKU-0173,Orus Buknu Masala (100gm.),piece,70.0,Spices,true
+SKU-0174,Orus Chat Masala(100g),piece,80.0,Spices,true
+SKU-0175,Orus Chole Masale(100g),piece,70.0,Pulses,true
+SKU-0176,Orus Dark Soya Sauce 200g Bottle,piece,0.0,Condiments,true
+SKU-0177,Orus Green Chilli Sauce 190g Bottle,piece,0.0,Condiments,true
+SKU-0178,Orus Kachauri Masala (100g.),piece,75.0,Spices,true
+SKU-0179,Orus Mango Pickle Masala (200g),piece,75.0,Pickle,true
+SKU-0180,Orus Raita Masala(100g),piece,55.0,Spices,true
+SKU-0181,Orus Red Chilly Pickle Masala(200g),piece,70.0,Pickle,true
+SKU-0182,Orus Sikanji Masala ( 100gm),piece,50.0,Spices,true
+SKU-0183,Orus White Vinegar 175ml Bottle,piece,30.0,Other,true
+SKU-0184,Orus White Vinegar 650ml Bottle,piece,0.0,Other,true
+SKU-0185,Premium Sada Papad 200gm,piece,83.81,Papad,true
+SKU-0186,RAW TURMERIC PICKLE BOTTLE 400G,piece,195.0,Pickle,true
+SKU-0187,Red Chille Pickle Bottle (400g),piece,215.0,Pickle,true
+SKU-0188,Red Chilli Masala Paste (Kg),kg,340.0,Spices,true
+SKU-0189,Red Chilli Pickle Bottle(200g),piece,115.0,Pickle,true
+SKU-0190,Red Chilli Pickle Jar (800g),piece,355.0,Pickle,true
+SKU-0191,Red Chillie Pickle (Kg),kg,400.0,Pickle,true
+SKU-0192,Sabji Masala Pouch (50g),piece,22.0,Spices,true
+SKU-0193,Samrat Green Chilli Pickle Tin (17.5kg),piece,1000.0,Pickle,true
+SKU-0194,Samrat Mixed Pickle Jar (6 Kg),kg,419.05,Pickle,true
+SKU-0195,Shaan Masala,piece,94.29,Spices,true
+SKU-0196,Shan Garam Mashala,piece,99.0,Other,true
+SKU-0197,Sugarcane Plus Vinegar,piece,214.29,Other,true
+SKU-0198,SWEET  CHILLI CHATNI (KG ),kg,320.0,Sweets,true
+SKU-0199,SWEET  CHILLI THAI SAUCE (200G ),piece,115.0,Sweets,true
+SKU-0200,SWEET  CHILLI THAI SAUCE (KG ),kg,320.0,Sweets,true
+SKU-0201,SWEET CHILLI THAI SAUCE (200G ),piece,0.0,Sweets,true
+SKU-0202,Sweet Lemon Chutney Bottle (500g),piece,205.0,Chutney,true
+SKU-0203,Sweet Lemon Pickle (Kg),kg,320.0,Pickle,true
+SKU-0204,Sweet Lemon Pickle Bottle (250g),piece,105.0,Pickle,true
+SKU-0205,Sweet Lemon Pickle Bottle (450g),piece,195.0,Pickle,true
+SKU-0206,Sweet Lemon Pickle Jar (1kg),piece,345.0,Pickle,true
+SKU-0207,Sweet Mango Lacha Bottle (500g),piece,195.0,Sweets,true
+SKU-0208,Sweet Mango Lacha Jar (1kg),piece,345.0,Sweets,true
+SKU-0209,Sweet Mango Lacha Pickle Bottle (250g),piece,105.0,Pickle,true
+SKU-0210,SWEETCHILLI CHUTNEY (200G),piece,115.0,Chutney,true
+SKU-0211,Tin Red Chilli Pickle (800g),piece,420.0,Pickle,true
+SKU-0212,TTK Rice Papad Assorted Pouch (500g),piece,84.0,Papad,true
+SKU-0213,Tutti Fruity (Kg),kg,112.0,Other,true
+SKU-0214,Yatis Aloo Chips Pouch (200g),piece,0.0,Chips,true
