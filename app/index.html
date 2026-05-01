@@ -191,8 +191,40 @@
 <!-- ============= TOAST ============= -->
 <div x-show="toast" x-transition role="status" aria-live="polite"
      class="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-imli text-papad px-5 py-3 rounded-2xl shadow-lg text-sm font-semibold flex items-center gap-2">
-  <svg class="i text-haldi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
   <span x-text="toast"></span>
+</div>
+
+<!-- ============= LOGIN SCREEN ============= -->
+<div x-show="!currentRole" class="fixed inset-0 z-[100] bg-papadDeep flex items-center justify-center p-4">
+  <div class="card-jar max-w-sm w-full">
+    <div class="text-center mb-6">
+      <div class="w-16 h-16 rounded-full bg-mirch grid place-items-center mx-auto mb-4">
+        <div class="badge !text-[6px] !px-1.5 !py-1 !shadow-none !border-mirch" style="box-shadow: 0 0 0 2px white;">
+          <div style="font-size:5px;letter-spacing:.18em">LUCKNOW'S</div>
+          <div class="display font-bold" style="font-size:8px">AROURA</div>
+          <div style="font-size:5px;letter-spacing:.18em">SINCE 1944</div>
+        </div>
+      </div>
+      <div class="display font-extrabold text-imli text-3xl leading-none">Audit Baba</div>
+      <div class="desi text-aamDark font-bold mt-1">हर गिनती का हिसाब</div>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="label">Username</label>
+        <input type="text" autocomplete="username" class="input" x-model="loginUsername" @keydown.enter="login()" placeholder="Enter username">
+      </div>
+      <div>
+        <label class="label">Password</label>
+        <input type="password" autocomplete="current-password" class="input" x-model="loginPassword" @keydown.enter="login()" placeholder="Enter password">
+      </div>
+      <div x-show="loginError" class="text-sm text-mirch font-semibold text-center" x-text="loginError"></div>
+      <button class="btn-primary w-full" @click="login()">
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        Sign in
+      </button>
+    </div>
+    <p class="text-xs text-imliFaint text-center mt-4">Default: owner / 0000 · manager / 1111 · auditor / 2222</p>
+  </div>
 </div>
 
 <!-- ============= MOBILE TOP BAR ============= -->
@@ -244,25 +276,21 @@
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18M9 14h6M9 18h3"/></svg>
         <span>Audits</span>
       </div>
-      <div @click="go('outlets')" :class="{'active': ['outlets','outlet-detail'].includes(view)}" class="nav-item">
+      <div x-show="currentRole !== 'auditor'" @click="go('outlets')" :class="{'active': ['outlets','outlet-detail'].includes(view)}" class="nav-item">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
         <span>Outlets</span>
         <span class="nav-count" x-text="outlets.length"></span>
       </div>
-      <div @click="go('skus')" :class="{'active': view==='skus'}" class="nav-item">
+      <div x-show="currentRole !== 'auditor'" @click="go('skus')" :class="{'active': view==='skus'}" class="nav-item">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><path d="M3.27 6.96L12 12l8.73-5.04M12 22V12"/></svg>
         <span>SKUs</span>
         <span class="nav-count" x-text="skus.length"></span>
       </div>
-      <div @click="go('dispatches')" :class="{'active': view==='dispatches'}" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        <span>Dispatches</span>
+      <div @click="go('stock-import')" :class="{'active': view==='stock-import'}" class="nav-item">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+        <span>Stock Import</span>
       </div>
-      <div @click="go('pos')" :class="{'active': view==='pos'}" class="nav-item">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-        <span>POS uploads</span>
-      </div>
-      <div @click="go('settings')" :class="{'active': view==='settings'}" class="nav-item">
+      <div x-show="currentRole === 'owner'" @click="go('settings')" :class="{'active': view==='settings'}" class="nav-item">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         <span>Settings</span>
       </div>
@@ -270,7 +298,10 @@
 
     <div class="absolute bottom-0 inset-x-0 p-4 border-t-2 border-imli/10 bg-papadDeep/50">
       <div class="caption !text-imliSoft">Aroura Achar</div>
-      <div class="text-xs text-imliSoft mt-0.5">Internal tool · Since 2026</div>
+      <div class="flex items-center justify-between mt-1">
+        <span class="text-xs text-imliSoft" x-text="currentUser ? currentUser.name + ' · ' + currentUser.role : ''"></span>
+        <button x-show="currentRole" @click="logout()" class="btn-ghost text-xs !text-mirch">Logout</button>
+      </div>
     </div>
   </aside>
 
@@ -280,16 +311,15 @@
     <!-- ==================== DASHBOARD ==================== -->
     <section x-show="view==='dashboard'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="caption">Namaste, Kanav</div>
+<div class="caption">Namaste, Kanav</div>
         <h1>Aaj ka <span class="text-mirch">hisaab.</span></h1>
         <p class="sub">Variance overview across your outlets.</p>
       </div>
 
-      <div x-show="!outlets.length || !audits.length" class="card mb-6 !bg-haldi/15 !border-haldi border-2">
+      <div x-show="currentRole !== 'auditor' && (!outlets.length || !audits.length)" class="card mb-6 !bg-haldi/15 !border-haldi border-2">
         <div class="flex items-start gap-3">
           <div class="w-10 h-10 rounded-xl bg-haldi grid place-items-center shrink-0">
-            <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
+            <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 16h-1v-4h-1M12 8h.01"/><circle cx="12" cy="12" r="10"/></svg>
           </div>
           <div class="flex-1">
             <div class="display font-bold text-imli text-lg">Shuru karte hain</div>
@@ -306,11 +336,10 @@
       </div>
 
       <!-- KPI cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div x-show="currentRole !== 'auditor'" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <!-- Big shortfall card -->
         <div class="sm:col-span-3 lg:col-span-1 rounded-3xl bg-mirch text-white p-5 relative overflow-hidden" style="box-shadow: 0 12px 32px -10px rgba(230,57,70,.45);">
           <div class="absolute -top-4 -right-4 w-32 h-32 dotgrid text-white/40 pointer-events-none"></div>
-          <svg class="absolute top-3 right-3 text-haldi i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
           <div class="caption !text-haldi">Shortfall this month</div>
           <div class="display font-extrabold tabular leading-none mt-2" style="font-size: 44px;" x-text="fmtINR(Math.abs(dashboardStats.totalShortfall))"></div>
           <div class="text-xs text-white/85 mt-3" x-text="dashboardStats.auditsThisMonth + ' audits'"></div>
@@ -329,7 +358,7 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+      <div x-show="currentRole !== 'auditor'" class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div class="card-jar">
           <div class="flex items-center justify-between mb-4">
             <div class="caption">Outlet shortfall · this month</div>
@@ -402,14 +431,13 @@
     <!-- ==================== AUDITS ==================== -->
     <section x-show="view==='audits'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="flex items-start justify-between flex-wrap gap-3">
+<div class="flex items-start justify-between flex-wrap gap-3">
           <div>
             <div class="caption">Counting day</div>
             <h1>Audits</h1>
             <p class="sub">Saath mein gintee karte hain.</p>
           </div>
-          <button class="btn-primary" @click="newAuditDraft()">
+          <button x-show="currentRole !== 'auditor'" class="btn-primary" @click="newAuditDraft()">
             <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             New audit
           </button>
@@ -483,8 +511,9 @@
                     <div class="flex gap-1.5 justify-end">
                       <button class="btn-ghost !text-mirch" @click="auditCaptureId=a.id; go('audit-capture')">Open</button>
                       <button class="btn-ghost" @click="exportAuditCsv(a.id)">CSV</button>
-                      <button x-show="a.status==='submitted'" class="btn-ghost !text-aamDark" @click="finalizeAudit(a.id)">Finalize</button>
-                      <button class="btn-ghost !text-mirch" @click="deleteAudit(a.id)" aria-label="Delete">×</button>
+                      <button x-show="a.status==='submitted' && currentRole !== 'auditor'" class="btn-ghost !text-aamDark" @click="finalizeAudit(a.id)">Finalize</button>
+                      <button x-show="a.status==='finalized' && currentRole === 'owner'" class="btn-ghost !text-haldi" @click="reopenAudit(a.id)">Reopen</button>
+                      <button x-show="currentRole === 'owner'" class="btn-ghost !text-mirch" @click="deleteAudit(a.id)" aria-label="Delete">×</button>
                     </div>
                   </td>
                 </tr>
@@ -508,7 +537,6 @@
           <!-- Audit context header -->
           <div class="rounded-3xl bg-imli text-papad p-5 mb-4 relative overflow-hidden">
             <div class="absolute -top-4 -right-4 w-32 h-32 dotgrid text-haldi/30 pointer-events-none"></div>
-            <svg class="absolute top-4 right-5 text-haldi i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
 
             <div class="flex items-start justify-between flex-wrap gap-3">
               <div>
@@ -682,8 +710,7 @@
     <!-- ==================== OUTLETS ==================== -->
     <section x-show="view==='outlets'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="flex items-start justify-between flex-wrap gap-3">
+<div class="flex items-start justify-between flex-wrap gap-3">
           <div>
             <div class="caption">Tumhare thikaane</div>
             <h1>Outlets</h1>
@@ -709,13 +736,24 @@
                 <option value="active">Active</option><option value="inactive">Inactive</option>
               </select>
             </div>
+            <div><label class="label">Outlet type</label>
+              <select class="input" x-model="outletDraft.outlet_type">
+                <option value="regular">Regular outlet (sealed + loose)</option>
+                <option value="express_kiosk">Express kiosk (packed only)</option>
+              </select>
+            </div>
             <div><label class="label">Started on</label><input type="date" class="input" x-model="outletDraft.started_on"></div>
             <div class="md:col-span-2">
               <label class="label">Excluded SKUs <span class="font-normal normal-case text-imliFaint">— this outlet doesn't carry these</span></label>
               <select multiple class="input h-32" x-model="outletDraft.excluded_skus">
-                <template x-for="s in skus" :key="s.id"><option :value="s.id" x-text="s.item_name"></option></template>
+                <template x-for="s in (outletDraft.outlet_type === 'express_kiosk' ? skus.filter(x => x.packed) : skus)" :key="s.id">
+                  <option :value="s.id" x-text="s.item_name"></option>
+                </template>
               </select>
-              <div class="text-xs text-imliFaint mt-1">Cmd/Ctrl-click to multi-select. <span x-text="(outletDraft.excluded_skus||[]).length + ' currently excluded'"></span></div>
+              <div class="text-xs text-imliFaint mt-1">
+                Cmd/Ctrl-click to multi-select. <span x-text="(outletDraft.excluded_skus||[]).length + ' currently excluded'"></span>.
+                <span x-show="outletDraft.outlet_type === 'express_kiosk'" class="text-haldi font-semibold">Showing packed SKUs only.</span>
+              </div>
             </div>
             <div class="md:col-span-2 flex gap-3">
               <button class="btn-primary" @click="saveOutletDraft()">Save</button>
@@ -727,14 +765,15 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <template x-for="o in outlets" :key="o.id">
-          <div class="card-jar hover:border-mirch transition cursor-pointer relative overflow-hidden" @click="openOutletDetail(o.id)">
-            <div class="absolute -top-4 -right-4 w-20 h-20 dotgrid text-haldi pointer-events-none"></div>
-            <div class="flex items-start justify-between relative">
-              <div class="min-w-0 flex-1 pr-2">
-                <div class="display font-extrabold text-imli text-lg leading-tight truncate" x-text="o.name"></div>
-                <div class="text-xs text-imliSoft truncate" x-text="o.location"></div>
+          <div class="card-jar hover:border-mirch transition cursor-pointer relative" @click="openOutletDetail(o.id)">
+            <div class="absolute top-0 right-0 w-20 h-20 dotgrid text-haldi pointer-events-none rounded-3xl overflow-hidden"></div>
+            <div class="relative">
+              <div class="display font-extrabold text-imli text-lg leading-tight" x-text="o.name"></div>
+              <div class="text-xs text-imliSoft mt-0.5" x-text="o.location"></div>
+              <div class="flex items-center gap-2 mt-2 flex-wrap">
+                <span class="pill" :class="'pill-' + o.status" x-text="o.status"></span>
+                <span class="pill text-[10px]" :class="o.outlet_type === 'express_kiosk' ? 'bg-haldiSoft text-imli' : 'bg-aamSoft text-aamDark'" x-text="o.outlet_type === 'express_kiosk' ? 'Express kiosk' : 'Regular'"></span>
               </div>
-              <span class="pill shrink-0" :class="'pill-' + o.status" x-text="o.status"></span>
             </div>
             <div class="mt-4 text-sm space-y-1">
               <div x-show="o.manager_name" class="flex items-center gap-2 text-imli">
@@ -749,9 +788,9 @@
                 View stock
                 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </span>
-              <div class="flex gap-1">
+              <div class="flex gap-1" x-show="currentRole !== 'auditor'">
                 <button class="btn-ghost" @click.stop="editOutlet(o.id)">Edit</button>
-                <button class="btn-ghost !text-mirch" @click.stop="deleteOutlet(o.id)">Delete</button>
+                <button x-show="currentRole === 'owner'" class="btn-ghost !text-mirch" @click.stop="deleteOutlet(o.id)">Delete</button>
               </div>
             </div>
           </div>
@@ -769,8 +808,7 @@
       <template x-if="outletById(outletDetailId)">
         <div>
           <div class="hero-head">
-            <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-            <div class="flex items-start justify-between flex-wrap gap-3">
+        <div class="flex items-start justify-between flex-wrap gap-3">
               <div>
                 <div class="caption" x-text="outletById(outletDetailId).location"></div>
                 <h1 x-text="outletById(outletDetailId).name"></h1>
@@ -874,17 +912,45 @@
     <!-- ==================== SKUs ==================== -->
     <section x-show="view==='skus'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="flex items-start justify-between flex-wrap gap-3">
+<div class="flex items-start justify-between flex-wrap gap-3">
           <div>
             <div class="caption">Catalogue</div>
             <h1>SKUs</h1>
             <p class="sub">Pickle, papad, candy — all of it.</p>
           </div>
-          <button class="btn-primary" @click="addSku()">
-            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            New SKU
-          </button>
+          <div class="flex gap-2 flex-wrap">
+            <button class="btn-secondary" @click="exportSkusCsv()">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 3v12"/></svg>
+              Export CSV
+            </button>
+            <button class="btn-primary" @click="addSku()">
+              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              New SKU
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-jar mb-4 !p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-lg bg-haldi grid place-items-center shrink-0">
+            <svg class="i text-imli" style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <div>
+            <div class="font-bold text-imli text-sm">Import SKUs from CSV</div>
+            <div class="text-xs text-imliFaint">New items are added · Existing names are skipped</div>
+          </div>
+        </div>
+        <input type="file" accept=".csv" @change="skuSheetSelected($event)" class="text-sm file:btn-secondary file:!py-1.5 file:!px-3 file:cursor-pointer file:mr-3">
+        <div x-show="skuImport.error" class="mt-2 text-sm text-mirch font-semibold" x-text="skuImport.error"></div>
+        <template x-if="skuImport.parsed">
+          <div class="mt-3 flex items-center gap-4 flex-wrap">
+            <span class="text-sm text-imliSoft"><span class="font-bold text-imli" x-text="skuImport.parsed?.length"></span> rows parsed</span>
+            <button class="btn-primary !py-1.5 !px-4 text-sm" @click="confirmSkuImport()">Import</button>
+          </div>
+        </template>
+        <div x-show="skuImport.added || skuImport.skipped" class="mt-2 text-xs text-aamDark font-semibold">
+          <span x-text="skuImport.added + ' added, ' + skuImport.skipped + ' duplicates skipped'"></span>
         </div>
       </div>
 
@@ -907,11 +973,11 @@
           <thead><tr>
             <th class="table-th">SKU</th><th class="table-th">Item</th>
             <th class="table-th">Unit</th><th class="table-th text-right">Sale ₹</th>
-            <th class="table-th">Category</th><th class="table-th">Active</th>
+            <th class="table-th">Category</th><th class="table-th">Packed</th><th class="table-th">Active</th><th class="table-th"></th>
           </tr></thead>
           <tbody>
             <template x-for="sku in filteredSkus" :key="sku.id">
-              <tr @dblclick="skuEditingId=sku.id">
+              <tr @dblclick="skuEditingId=sku.id" class="cursor-default">
                 <td class="table-td font-mono text-xs text-imliFaint" x-text="sku.id"></td>
                 <td class="table-td">
                   <template x-if="skuEditingId===sku.id">
@@ -946,7 +1012,13 @@
                   </template>
                 </td>
                 <td class="table-td">
+                  <input type="checkbox" x-model="sku.packed" @change="saveSkuEdit(sku)" class="accent-aam w-4 h-4">
+                </td>
+                <td class="table-td">
                   <input type="checkbox" x-model="sku.active" @change="saveSkuEdit(sku)" class="accent-mirch w-4 h-4">
+                </td>
+                <td class="table-td">
+                  <button x-show="currentRole === 'owner'" class="btn-ghost !text-mirch text-xs" @click="deleteSku(sku.id)">Delete</button>
                 </td>
               </tr>
             </template>
@@ -956,130 +1028,19 @@
           <template x-for="c in categories" :key="c"><option :value="c"></option></template>
         </datalist>
       </div>
-      <p class="text-xs text-imliFaint mt-2 italic px-1">Double-click a row to edit. SKUs with ₹0 prices are flagged in red — fix them before scaling.</p>
+      <p class="text-xs text-imliFaint mt-2 italic px-1">Double-click a row to edit. <span class="text-aamDark">Packed</span> = appears at express kiosks. Uncheck to make a SKU regular-outlet-only. SKUs with ₹0 prices are flagged in red — fix them before scaling.</p>
     </section>
 
-    <!-- ==================== DISPATCHES ==================== -->
-    <section x-show="view==='dispatches'">
+    <!-- ==================== STOCK IMPORT ==================== -->
+    <section x-show="view==='stock-import'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="flex items-start justify-between flex-wrap gap-3">
+<div class="flex items-start justify-between flex-wrap gap-3">
           <div>
-            <div class="caption">Godown to outlet</div>
-            <h1>Dispatches</h1>
-            <p class="sub">Maal kaha gaya, kitna gaya.</p>
-          </div>
-          <button class="btn-primary" @click="newDispatchDraft()">
-            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            New dispatch
-          </button>
-        </div>
-      </div>
-
-      <div x-show="dispatchDraft" class="card-jar mb-6 !border-mirch border-2">
-        <div class="display font-bold text-imli text-lg mb-4">New dispatch</div>
-        <template x-if="dispatchDraft">
-          <div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label class="label">Outlet</label>
-                <select class="input" x-model="dispatchDraft.outlet_id">
-                  <template x-for="o in outlets" :key="o.id"><option :value="o.id" x-text="o.name"></option></template>
-                </select>
-              </div>
-              <div><label class="label">Dispatched on</label><input type="date" class="input" x-model="dispatchDraft.dispatched_on"></div>
-              <div><label class="label">Dispatched by</label><input class="input" x-model="dispatchDraft.dispatched_by" placeholder="Godown staff name"></div>
-            </div>
-            <div class="caption mb-2">Lines</div>
-            <div class="space-y-2 mb-3">
-              <template x-for="(line, idx) in dispatchDraft.lines" :key="line.id">
-                <div class="flex gap-2 items-center">
-                  <select class="input flex-1" x-model="line.sku_id">
-                    <option value="">Select SKU…</option>
-                    <template x-for="s in skus.filter(x => x.active)" :key="s.id"><option :value="s.id" x-text="s.item_name"></option></template>
-                  </select>
-                  <input type="number" step="0.001" class="input w-24 text-right tabular" x-model.number="line.qty_dispatched" placeholder="Qty">
-                  <button class="btn-secondary !px-3" @click="removeDispatchLine(idx)" aria-label="Remove">×</button>
-                </div>
-              </template>
-            </div>
-            <button class="btn-secondary mb-4" @click="addDispatchLine()">+ Add line</button>
-            <div class="flex gap-3 flex-wrap">
-              <button class="btn-secondary" @click="saveDispatch('draft')">Save draft</button>
-              <button class="btn-primary" @click="saveDispatch('sent')">Mark as sent</button>
-              <button class="btn-secondary ml-auto" @click="dispatchDraft=null">Cancel</button>
-            </div>
-          </div>
-        </template>
-      </div>
-
-      <!-- Acknowledgement modal -->
-      <div x-show="dispatchAckId" x-transition class="fixed inset-0 bg-imli/60 flex items-center justify-center z-50 p-4" @click.self="dispatchAckId=null">
-        <div class="bg-papad rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2 border-imli/15">
-          <div class="p-5 border-b-2 border-imli/10 flex justify-between items-center bg-papadDeep rounded-t-3xl">
-            <div>
-              <div class="display font-bold text-imli text-lg">Acknowledge receipt</div>
-              <div class="caption">Outlet confirms what was actually received</div>
-            </div>
-            <button @click="dispatchAckId=null" class="w-9 h-9 rounded-xl hover:bg-papad grid place-items-center text-imliSoft" aria-label="Close">
-              <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
-          <div class="p-5">
-            <table class="w-full text-sm">
-              <thead><tr><th class="table-th rounded-l-lg">Item</th><th class="table-th text-right">Sent</th><th class="table-th text-right rounded-r-lg">Received</th></tr></thead>
-              <tbody>
-                <template x-for="ln in _ackLines" :key="ln.id">
-                  <tr>
-                    <td class="table-td font-semibold text-imli" x-text="skuById(ln.sku_id)?.item_name"></td>
-                    <td class="table-td text-right tabular text-imliSoft" x-text="fmtQty(ln.qty_dispatched)"></td>
-                    <td class="table-td text-right">
-                      <input type="number" step="0.001" class="input !py-1.5 w-24 text-right tabular" x-model.number="ln.qty_received">
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
-            </table>
-            <div class="mt-4 flex gap-3">
-              <button class="btn-primary" @click="confirmAckDispatch()">
-                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-                Confirm receipt
-              </button>
-              <button class="btn-secondary" @click="dispatchAckId=null">Cancel</button>
-            </div>
+            <div class="caption">Dispatch + Sales in one shot</div>
+            <h1>Stock Import</h1>
+            <p class="sub">Upload one CSV — audit opens automatically.</p>
           </div>
         </div>
-      </div>
-
-      <div class="card-jar !p-0 overflow-x-auto">
-        <table class="w-full">
-          <thead><tr><th class="table-th">Date</th><th class="table-th">Outlet</th><th class="table-th text-right">Lines</th><th class="table-th">Status</th><th class="table-th"></th></tr></thead>
-          <tbody>
-            <template x-for="d in [...dispatches].sort((a,b) => b.dispatched_on.localeCompare(a.dispatched_on))" :key="d.id">
-              <tr>
-                <td class="table-td tabular text-imliSoft" x-text="d.dispatched_on"></td>
-                <td class="table-td font-semibold text-imli" x-text="outletById(d.outlet_id)?.name || '(deleted)'"></td>
-                <td class="table-td text-right tabular" x-text="dispatchLinesFor(d.id).length"></td>
-                <td class="table-td"><span class="pill" :class="'pill-' + d.status" x-text="d.status"></span></td>
-                <td class="table-td text-right">
-                  <button x-show="d.status==='sent'" class="btn-ghost !text-mirch" @click="openAckDispatch(d.id)">Acknowledge</button>
-                  <span x-show="d.status==='received'" class="text-xs text-imliFaint" x-text="'Received ' + d.received_on"></span>
-                </td>
-              </tr>
-            </template>
-            <tr x-show="!dispatches.length"><td colspan="5" class="table-td text-center text-imliFaint py-12 italic">No dispatches yet.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ==================== POS ==================== -->
-    <section x-show="view==='pos'">
-      <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="caption">Sales data</div>
-        <h1>POS uploads</h1>
-        <p class="sub">Bik kya, kitna bik gaya.</p>
       </div>
 
       <div class="card-jar mb-6">
@@ -1088,59 +1049,126 @@
             <svg class="i text-imli" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
           </div>
           <div>
-            <div class="display font-bold text-imli text-lg">Upload POS export</div>
-            <div class="caption">CSV format · sku_id or item_name · qty_sold · revenue (optional)</div>
+            <div class="display font-bold text-imli text-lg">Upload stock summary CSV</div>
+            <div class="caption">Columns: Item Name · Opening Quantity · Quantity In · Quantity Out · Closing Quantity</div>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="label">Outlet</label>
-            <select class="input" x-model="posUpload.outlet">
+            <select class="input" x-model="stockImport.outlet">
               <option value="">Pick outlet…</option>
               <template x-for="o in outlets" :key="o.id"><option :value="o.id" x-text="o.name"></option></template>
             </select>
           </div>
-          <div><label class="label">Period start</label><input type="date" class="input" x-model="posUpload.period_start"></div>
-          <div><label class="label">Period end</label><input type="date" class="input" x-model="posUpload.period_end"></div>
+          <div><label class="label">Period start</label><input type="date" class="input" x-model="stockImport.period_start"></div>
+          <div><label class="label">Closing date (audit date)</label><input type="date" class="input" x-model="stockImport.closing_date"></div>
         </div>
-        <input type="file" accept=".csv" @change="posCsvSelected($event)" class="mt-4 text-sm file:btn-secondary file:!py-2 file:!px-4 file:cursor-pointer file:mr-3">
-        <div x-show="posUpload.error" class="mt-3 text-sm text-mirch font-semibold" x-text="posUpload.error"></div>
-        <div x-show="posUpload.parsed" class="mt-4 p-3 rounded-xl bg-aamSoft border-2 border-aam/30">
-          <div class="text-sm text-aamDark mb-2 font-semibold">
-            Parsed <span class="tabular" x-text="posUpload.parsed?.length"></span> rows.
-            <span x-show="posUpload.unmatched?.length" class="text-mirch">
-              <span x-text="posUpload.unmatched.length"></span> unmatched (skipped).
-            </span>
-          </div>
-          <button class="btn-primary" @click="confirmPosImport()">Import</button>
+        <div class="mt-4">
+          <label class="label">Stock summary CSV</label>
+          <input type="file" accept=".csv" @change="stockCsvSelected($event)" class="text-sm file:btn-secondary file:!py-2 file:!px-4 file:cursor-pointer file:mr-3">
         </div>
-      </div>
+        <div x-show="stockImport.error" class="mt-3 text-sm text-mirch font-semibold" x-text="stockImport.error"></div>
 
-      <div class="card-jar !p-0 overflow-x-auto">
-        <table class="w-full">
-          <thead><tr><th class="table-th">Outlet</th><th class="table-th">Period</th><th class="table-th text-right">Lines</th><th class="table-th">Uploaded</th></tr></thead>
-          <tbody>
-            <template x-for="p in posImports" :key="p.id">
-              <tr>
-                <td class="table-td font-semibold text-imli" x-text="outletById(p.outlet_id)?.name || '(deleted)'"></td>
-                <td class="table-td text-xs tabular text-imliSoft" x-text="p.period_start + ' → ' + p.period_end"></td>
-                <td class="table-td text-right tabular" x-text="p.line_count"></td>
-                <td class="table-td text-xs text-imliFaint tabular" x-text="p.uploaded_on?.slice(0,10)"></td>
-              </tr>
-            </template>
-            <tr x-show="!posImports.length"><td colspan="4" class="table-td text-center text-imliFaint py-12 italic">No POS data yet.</td></tr>
-          </tbody>
-        </table>
+        <template x-if="stockImport.parsed">
+          <div class="mt-4">
+            <div class="p-3 rounded-xl bg-aamSoft border-2 border-aam/30 mb-3 flex items-center justify-between flex-wrap gap-3">
+              <div class="text-sm text-aamDark font-semibold">
+                <span class="tabular" x-text="stockImport.parsed?.length"></span> items parsed.
+                <span x-show="stockImport.unmatched?.length" class="text-mirch ml-2">
+                  <span x-text="stockImport.unmatched.length"></span> unmatched (skipped).
+                </span>
+              </div>
+              <button class="btn-primary" @click="confirmStockImport()">
+                <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                Import &amp; open audit
+              </button>
+            </div>
+            <div class="card-jar !p-0 overflow-x-auto mb-3">
+              <table class="w-full text-sm">
+                <thead><tr>
+                  <th class="table-th">Item</th>
+                  <th class="table-th text-right">Opening</th>
+                  <th class="table-th text-right">Stock In</th>
+                  <th class="table-th text-right">Stock Out</th>
+                  <th class="table-th text-right">Closing</th>
+                </tr></thead>
+                <tbody>
+                  <template x-for="row in stockImport.parsed" :key="row.sku_id">
+                    <tr>
+                      <td class="table-td font-semibold text-imli" x-text="row.item_name"></td>
+                      <td class="table-td text-right tabular" x-text="fmtQty(row.opening)"></td>
+                      <td class="table-td text-right tabular text-aamDark" x-text="fmtQty(row.qty_in)"></td>
+                      <td class="table-td text-right tabular text-mirch" x-text="fmtQty(row.qty_out)"></td>
+                      <td class="table-td text-right tabular font-bold text-imli" x-text="fmtQty(row.closing)"></td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+            <div x-show="stockImport.unmatched?.length" class="p-3 rounded-xl bg-mirchSoft border-2 border-mirch/20">
+              <div class="text-xs font-bold text-mirch mb-1">Unmatched items (not in SKU master — skipped):</div>
+              <div class="text-xs text-imliSoft" x-text="stockImport.unmatched?.join(', ')"></div>
+            </div>
+          </div>
+        </template>
       </div>
     </section>
 
     <!-- ==================== SETTINGS ==================== -->
     <section x-show="view==='settings'">
       <div class="hero-head">
-        <svg class="star i" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>
-        <div class="caption">App settings</div>
+<div class="caption">App settings</div>
         <h1>Settings</h1>
         <p class="sub">Backup, reset, and dosti.</p>
+      </div>
+
+      <div class="card-jar mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <div class="display font-bold text-imli text-lg">Users</div>
+          <button class="btn-primary !py-1.5 !px-3 text-xs" @click="newUserDraft()">+ Add user</button>
+        </div>
+
+        <div x-show="userDraft" class="mb-4 p-4 rounded-xl bg-papadDeep border-2 border-imli/15">
+          <template x-if="userDraft">
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="label">Full name</label><input class="input" x-model="userDraft.name" placeholder="Rahul"></div>
+              <div><label class="label">Username</label><input class="input" x-model="userDraft.username" placeholder="rahul" autocomplete="off"></div>
+              <div><label class="label">Password</label><input type="password" class="input" x-model="userDraft.password" placeholder="Set password" autocomplete="new-password"></div>
+              <div><label class="label">Role</label>
+                <select class="input" x-model="userDraft.role">
+                  <option value="owner">Owner</option>
+                  <option value="manager">Manager</option>
+                  <option value="auditor">Auditor</option>
+                </select>
+              </div>
+              <div class="col-span-2 flex gap-2">
+                <button class="btn-primary" @click="saveUserDraft()">Save</button>
+                <button class="btn-secondary" @click="userDraft=null">Cancel</button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr><th class="table-th">Name</th><th class="table-th">Username</th><th class="table-th">Role</th><th class="table-th"></th></tr></thead>
+            <tbody>
+              <template x-for="u in users" :key="u.id">
+                <tr>
+                  <td class="table-td font-semibold text-imli" x-text="u.name"></td>
+                  <td class="table-td text-imliSoft" x-text="u.username"></td>
+                  <td class="table-td"><span class="pill" :class="u.role==='owner'?'bg-mirchSoft text-mirch':u.role==='manager'?'pill-sent':'pill-active'" x-text="u.role"></span></td>
+                  <td class="table-td text-right">
+                    <button class="btn-ghost" @click="editUserDraft(u.id)">Edit</button>
+                    <button class="btn-ghost !text-mirch" @click="deleteUser(u.id)" x-show="currentUserId !== u.id">Delete</button>
+                    <span x-show="currentUserId === u.id" class="text-xs text-imliFaint">(you)</span>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div class="card-jar mb-4">
@@ -1187,11 +1215,11 @@
     <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
     Audits
   </button>
-  <button class="bnav" :class="{'active': ['outlets','outlet-detail'].includes(view)}" @click="go('outlets')">
+  <button x-show="currentRole !== 'auditor'" class="bnav" :class="{'active': ['outlets','outlet-detail'].includes(view)}" @click="go('outlets')">
     <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
     Outlets
   </button>
-  <button class="bnav" :class="{'active': view==='skus'}" @click="go('skus')">
+  <button x-show="currentRole !== 'auditor'" class="bnav" :class="{'active': view==='skus'}" @click="go('skus')">
     <span class="bnav-icon"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></span>
     SKUs
   </button>

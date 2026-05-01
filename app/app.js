@@ -53,6 +53,7 @@ function app() {
     dispatchAckId: null, // dispatch being acknowledged by outlet
 
     posUpload: { outlet: "", period_start: "", period_end: "", parsed: null, error: "", unmatched: [] },
+    stockImport: { outlet: "", period_start: "", closing_date: "", parsed: null, error: "", unmatched: [] },
     _ackLines: [],
 
     auditDraft: null,
@@ -62,12 +63,41 @@ function app() {
 
     toast: "",
 
+    // ---------- auth ----------
+    users: LS.get("users", []),
+    currentUserId: LS.get("currentUserId", null),
+    loginUsername: "",
+    loginPassword: "",
+    loginError: "",
+    userDraft: null,
+    skuImport: { parsed: null, error: "", added: 0, skipped: 0 },
+
+    get currentUser() { return this.users.find(u => u.id === this.currentUserId) || null; },
+    get currentRole() { return this.currentUser?.role || null; },
+
     // ---------- init ----------
     init() {
       if (!this.skus.length && window.SEED_SKUS) {
-        this.skus = window.SEED_SKUS.map(s => ({ id: s.sku_id, ...s }));
+        this.skus = window.SEED_SKUS.map(s => ({ id: s.sku_id, ...s, packed: true }));
         this.persist("skus");
         this.notify(`Loaded ${this.skus.length} SKUs from seed`);
+      }
+      // Migrate: stamp packed:true on existing SKUs that pre-date this field
+      let skuMigrated = false;
+      for (const s of this.skus) { if (s.packed === undefined) { s.packed = true; skuMigrated = true; } }
+      if (skuMigrated) this.persist("skus");
+      // Migrate: stamp outlet_type on existing outlets
+      let outletMigrated = false;
+      for (const o of this.outlets) { if (!o.outlet_type) { o.outlet_type = "regular"; outletMigrated = true; } }
+      if (outletMigrated) this.persist("outlets");
+      // Seed default users if none exist
+      if (!this.users.length) {
+        this.users = [
+          { id: "usr-owner",   name: "Owner",   username: "owner",   password: "0000", role: "owner" },
+          { id: "usr-manager", name: "Manager", username: "manager", password: "1111", role: "manager" },
+          { id: "usr-auditor", name: "Auditor", username: "auditor", password: "2222", role: "auditor" },
+        ];
+        this.persist("users");
       }
       // route via hash if present
       const h = location.hash.slice(1);
@@ -80,7 +110,7 @@ function app() {
 
     persist(key) { LS.set(key, this[key]); },
     persistAll() {
-      ["skus","outlets","dispatches","dispatchLines","posImports","posLines","audits","auditLines","adjustments"]
+      ["skus","outlets","dispatches","dispatchLines","posImports","posLines","audits","auditLines","adjustments","users"]
         .forEach(k => this.persist(k));
     },
 
@@ -89,6 +119,50 @@ function app() {
       this.sidebarOpen = false;
       location.hash = view;
       window.scrollTo(0, 0);
+    },
+
+    login() {
+      const user = this.users.find(u => u.username === this.loginUsername.trim() && u.password === this.loginPassword);
+      if (!user) { this.loginError = "Wrong username or password."; return; }
+      this.currentUserId = user.id;
+      LS.set("currentUserId", user.id);
+      this.loginUsername = "";
+      this.loginPassword = "";
+      this.loginError = "";
+    },
+    logout() {
+      this.currentUserId = null;
+      LS.set("currentUserId", null);
+      this.view = "dashboard";
+    },
+    newUserDraft() {
+      this.userDraft = { id: null, name: "", username: "", password: "", role: "auditor" };
+    },
+    editUserDraft(id) {
+      this.userDraft = JSON.parse(JSON.stringify(this.users.find(u => u.id === id)));
+    },
+    saveUserDraft() {
+      const d = this.userDraft;
+      if (!d.name.trim() || !d.username.trim() || !d.password.trim()) { this.notify("Name, username and password required"); return; }
+      if (!d.id && this.users.find(u => u.username === d.username.trim())) { this.notify("Username already taken"); return; }
+      d.username = d.username.trim();
+      if (d.id) {
+        const i = this.users.findIndex(u => u.id === d.id);
+        this.users[i] = { ...d };
+      } else {
+        d.id = uid("USR");
+        this.users.push({ ...d });
+      }
+      this.persist("users");
+      this.userDraft = null;
+      this.notify("User saved");
+    },
+    deleteUser(id) {
+      if (this.currentUserId === id) { this.notify("Cannot delete yourself"); return; }
+      if (!confirm("Delete this user?")) return;
+      this.users = this.users.filter(u => u.id !== id);
+      this.persist("users");
+      this.notify("User deleted");
     },
 
     notify(msg) {
@@ -118,7 +192,8 @@ function app() {
     activeOutletSkus(outletId) {
       const outlet = this.outletById(outletId);
       const excluded = new Set(outlet?.excluded_skus || []);
-      return this.skus.filter(s => s.active && !excluded.has(s.id));
+      const isKiosk = outlet?.outlet_type === "express_kiosk";
+      return this.skus.filter(s => s.active && !excluded.has(s.id) && (!isKiosk || s.packed));
     },
 
     // ---------- DASHBOARD ----------
@@ -126,17 +201,21 @@ function app() {
       const thisMonth = todayISO().slice(0, 7);
       const monthAudits = this.audits.filter(a => a.audit_date.startsWith(thisMonth));
       const monthLines = this.auditLines.filter(l => monthAudits.some(a => a.id === l.audit_id));
-      const totalShortfall = monthLines.reduce((s, l) => s + (l.variance_value < 0 ? l.variance_value : 0), 0);
+      const totalShortfall = monthLines.reduce((s, l) => {
+        const vv = this.auditLineVarianceValue(l);
+        return s + (vv !== null && vv < 0 ? vv : 0);
+      }, 0);
       const byOutlet = {};
       for (const l of monthLines) {
         const a = monthAudits.find(x => x.id === l.audit_id);
         if (!a) continue;
-        byOutlet[a.outlet_id] = (byOutlet[a.outlet_id] || 0) + (l.variance_value < 0 ? l.variance_value : 0);
+        const vv = this.auditLineVarianceValue(l);
+        byOutlet[a.outlet_id] = (byOutlet[a.outlet_id] || 0) + (vv !== null && vv < 0 ? vv : 0);
       }
       const bySku = {};
-      const allShortfallLines = this.auditLines.filter(l => l.variance_value < 0);
-      for (const l of allShortfallLines) {
-        bySku[l.sku_id] = (bySku[l.sku_id] || 0) + l.variance_value;
+      for (const l of this.auditLines) {
+        const vv = this.auditLineVarianceValue(l);
+        if (vv !== null && vv < 0) bySku[l.sku_id] = (bySku[l.sku_id] || 0) + vv;
       }
       const topLossSkus = Object.entries(bySku)
         .sort((a, b) => a[1] - b[1])
@@ -153,14 +232,74 @@ function app() {
       };
     },
 
+    // ---------- SKU import ----------
+    skuSheetSelected(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try { this.parseSkuSheet(e.target.result); }
+        catch (err) { this.skuImport.error = err.message; this.skuImport.parsed = null; }
+      };
+      reader.readAsText(file);
+    },
+    parseSkuSheet(text) {
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (!lines.length) throw new Error("Empty file");
+      const rawHeader = lines[0].split(",").map(s => s.trim().replace(/^"|"$/g, "").toLowerCase());
+      const findCol = (...names) => {
+        for (const n of names) { const i = rawHeader.findIndex(h => h.includes(n)); if (i >= 0) return i; }
+        return -1;
+      };
+      const idxName  = findCol("item name", "item_name");
+      if (idxName < 0) throw new Error("CSV must have an 'Item Name' column");
+      const idxUnit  = findCol("unit");
+      const idxPrice = findCol("sale price", "sale_price", "price");
+      const idxCat   = findCol("category");
+      const parsed = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map(s => s.trim().replace(/^"|"$/g, ""));
+        if (!cols[idxName]) continue;
+        parsed.push({
+          item_name:  cols[idxName],
+          unit:       idxUnit  >= 0 ? (cols[idxUnit]  || "piece") : "piece",
+          sale_price: idxPrice >= 0 ? (parseFloat(cols[idxPrice]) || 0) : 0,
+          category:   idxCat   >= 0 ? (cols[idxCat]   || "Other") : "Other",
+        });
+      }
+      this.skuImport.parsed = parsed;
+      this.skuImport.error = "";
+    },
+    confirmSkuImport() {
+      if (!this.skuImport.parsed?.length) return;
+      const existing = new Set(this.skus.map(s => s.item_name.toLowerCase()));
+      let added = 0, skipped = 0;
+      for (const row of this.skuImport.parsed) {
+        if (existing.has(row.item_name.toLowerCase())) { skipped++; continue; }
+        const id = uid("SKU");
+        this.skus.push({ id, sku_id: id, item_name: row.item_name, unit: row.unit, sale_price: row.sale_price, category: row.category, active: true, packed: true });
+        existing.add(row.item_name.toLowerCase());
+        added++;
+      }
+      this.persist("skus");
+      this.skuImport = { parsed: null, error: "", added, skipped };
+      this.notify(`${added} SKUs added, ${skipped} duplicates skipped`);
+    },
+
     // ---------- SKUs ----------
     saveSkuEdit(sku) {
       this.persist("skus");
       this.skuEditingId = null;
       this.notify("SKU updated");
     },
+    deleteSku(id) {
+      if (!confirm("Delete this SKU? Audit lines referencing it will lose their item name.")) return;
+      this.skus = this.skus.filter(s => s.id !== id);
+      this.persist("skus");
+      this.notify("SKU deleted");
+    },
     addSku() {
-      const sku = { id: uid("SKU"), sku_id: uid("SKU"), item_name: "New item", unit: "piece", sale_price: 0, category: "Other", active: true };
+      const sku = { id: uid("SKU"), sku_id: uid("SKU"), item_name: "New item", unit: "piece", sale_price: 0, category: "Other", active: true, packed: true };
       this.skus.unshift(sku);
       this.persist("skus");
       this.skuEditingId = sku.id;
@@ -168,7 +307,7 @@ function app() {
 
     // ---------- Outlets ----------
     newOutletDraft() {
-      this.outletDraft = { id: null, name: "", location: "", manager_name: "", manager_phone: "", status: "active", started_on: todayISO(), excluded_skus: [] };
+      this.outletDraft = { id: null, name: "", location: "", manager_name: "", manager_phone: "", status: "active", outlet_type: "regular", started_on: todayISO(), excluded_skus: [] };
     },
     editOutlet(id) {
       const o = this.outletById(id);
@@ -420,6 +559,96 @@ function app() {
       this.notify("POS data imported");
     },
 
+    // ---------- STOCK IMPORT ----------
+    stockCsvSelected(ev) {
+      const file = ev.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try { this.parseStockCsv(e.target.result); }
+        catch (err) { this.stockImport.error = err.message; this.stockImport.parsed = null; }
+      };
+      reader.readAsText(file);
+    },
+
+    parseStockCsv(text) {
+      const lines = text.split(/\r?\n/).filter(l => l.trim());
+      if (!lines.length) throw new Error("Empty file");
+      const rawHeader = lines[0].split(",").map(s => s.trim().replace(/^"|"$/g, "").toLowerCase());
+
+      const findCol = (...names) => {
+        for (const n of names) {
+          const idx = rawHeader.findIndex(h => h.includes(n));
+          if (idx >= 0) return idx;
+        }
+        return -1;
+      };
+
+      const idxName  = findCol("item name", "item_name");
+      const idxOpen  = findCol("opening quantity", "opening", "open");
+      const idxIn    = findCol("quantity in", "stock in", "qty_in", "stock_in");
+      const idxOut   = findCol("quantity out", "stock out", "qty_out", "stock_out");
+      const idxClose = findCol("closing quantity", "closing", "close");
+
+      if (idxName  < 0) throw new Error("CSV must have an 'Item Name' column");
+      if (idxOpen  < 0) throw new Error("CSV must have an 'Opening Quantity' column");
+      if (idxIn    < 0) throw new Error("CSV must have a 'Quantity In' column");
+      if (idxOut   < 0) throw new Error("CSV must have a 'Quantity Out' column");
+      if (idxClose < 0) throw new Error("CSV must have a 'Closing Quantity' column");
+
+      const parsed = [], unmatched = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(",").map(s => s.trim().replace(/^"|"$/g, ""));
+        const name = cols[idxName];
+        if (!name) continue;
+        const sku = this.skus.find(s => s.item_name.toLowerCase() === name.toLowerCase());
+        if (!sku) { unmatched.push(name); continue; }
+        parsed.push({
+          sku_id:    sku.id,
+          item_name: sku.item_name,
+          opening:   parseFloat(cols[idxOpen])  || 0,
+          qty_in:    parseFloat(cols[idxIn])     || 0,
+          qty_out:   parseFloat(cols[idxOut])    || 0,
+          closing:   parseFloat(cols[idxClose])  || 0,
+        });
+      }
+      this.stockImport.parsed = parsed;
+      this.stockImport.unmatched = unmatched;
+      this.stockImport.error = "";
+    },
+
+    confirmStockImport() {
+      const si = this.stockImport;
+      if (!si.outlet || !si.closing_date || !si.period_start || !si.parsed?.length) {
+        this.notify("Fill outlet, period start, closing date, and upload a valid CSV");
+        return;
+      }
+      const auditId = uid("AUD");
+      this.audits.unshift({
+        id: auditId, outlet_id: si.outlet,
+        audit_date: si.closing_date, period_start: si.period_start,
+        hq_auditor: "", outlet_witness: "", status: "in_progress",
+        signed_off_at: null,
+      });
+      for (const row of si.parsed) {
+        this.auditLines.push({
+          id: uid("AL"), audit_id: auditId, sku_id: row.sku_id,
+          opening_qty: row.opening,
+          dispatched_in_period: row.qty_in,
+          sold_in_period: row.qty_out,
+          adjustments_in_period: 0,
+          physical_qty: row.closing,
+          notes: "",
+        });
+      }
+      this.persistAll();
+      const count = si.parsed.length;
+      Object.assign(this.stockImport, { outlet: "", period_start: "", closing_date: "", parsed: null, error: "", unmatched: [] });
+      this.auditCaptureId = auditId;
+      this.go("audit-capture");
+      this.notify(`Audit ready: ${count} SKUs pre-filled from CSV`);
+    },
+
     // ---------- AUDITS ----------
     newAuditDraft() {
       this.auditDraft = {
@@ -566,6 +795,13 @@ function app() {
       this.persist("audits");
       this.notify("Audit finalized");
     },
+    reopenAudit(auditId) {
+      if (!confirm("Reopen this finalized audit for editing?")) return;
+      const a = this.auditById(auditId);
+      a.status = "in_progress";
+      this.persist("audits");
+      this.notify("Audit reopened");
+    },
 
     deleteAudit(auditId) {
       if (!confirm("Delete this audit and all its lines?")) return;
@@ -610,6 +846,29 @@ function app() {
       const link = document.createElement("a");
       link.href = url;
       link.download = `audit-${o?.name || a.outlet_id}-${a.audit_date}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+    },
+
+    exportSkusCsv() {
+      const header = ["sku_id","item_name","unit","sale_price","category","packed","active"];
+      const rows = [header.join(",")];
+      for (const s of this.skus) {
+        rows.push([
+          s.id,
+          `"${(s.item_name || "").replace(/"/g,'""')}"`,
+          `"${(s.unit || "").replace(/"/g,'""')}"`,
+          s.sale_price ?? "",
+          `"${(s.category || "").replace(/"/g,'""')}"`,
+          s.packed ? "yes" : "no",
+          s.active ? "yes" : "no",
+        ].join(","));
+      }
+      const blob = new Blob([rows.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `aroura-skus-${todayISO()}.csv`;
       link.click();
       URL.revokeObjectURL(url);
     },
