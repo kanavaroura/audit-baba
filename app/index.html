@@ -189,11 +189,25 @@
   main { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   @media (min-width: 768px) { main { padding-bottom: 2rem; } }
 </style>
+<script type="module" src="app.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 <script src="seed.js"></script>
-<script src="app.js"></script>
 </head>
-<body x-data="app()" x-init="init()" x-cloak class="min-h-screen">
+<body x-data="app" x-cloak class="min-h-screen">
+
+<!-- ============= LOADING SCREEN ============= -->
+<div x-show="loading" class="fixed inset-0 z-[120] bg-papadDeep flex flex-col items-center justify-center gap-5">
+  <div class="w-16 h-16 rounded-full bg-mirch grid place-items-center shadow-lg">
+    <div class="badge !text-[6px] !px-1.5 !py-1 !shadow-none !border-mirch" style="box-shadow:0 0 0 2px white">
+      <div style="font-size:5px;letter-spacing:.18em">LUCKNOW'S</div>
+      <div class="display font-bold" style="font-size:8px">AROURA</div>
+      <div style="font-size:5px;letter-spacing:.18em">SINCE 1944</div>
+    </div>
+  </div>
+  <div class="display font-extrabold text-imli text-2xl">Audit Baba</div>
+  <div class="w-8 h-8 border-4 border-mirch/30 border-t-mirch rounded-full animate-spin"></div>
+  <div class="text-imliFaint text-sm">Syncing with cloud…</div>
+</div>
 
 <!-- ============= TOAST ============= -->
 <div x-show="toast" x-transition role="status" aria-live="polite"
@@ -202,7 +216,7 @@
 </div>
 
 <!-- ============= LOGIN SCREEN ============= -->
-<div x-show="!currentRole" class="fixed inset-0 z-[100] bg-papadDeep flex items-center justify-center p-4">
+<div x-show="!loading && !currentRole" class="fixed inset-0 z-[100] bg-papadDeep flex items-center justify-center p-4">
   <div class="card-jar max-w-sm w-full">
     <div class="text-center mb-6">
       <div class="w-16 h-16 rounded-full bg-mirch grid place-items-center mx-auto mb-4">
