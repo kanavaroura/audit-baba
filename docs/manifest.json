@@ -2,7 +2,7 @@
   "name": "Audit Baba · Aroura Achar",
   "short_name": "Audit Baba",
   "description": "Inventory audit tool for Aroura Achar outlets",
-  "start_url": "/audit-shop/app/index.html",
+  "start_url": "/audit-baba/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F1EEE6",
