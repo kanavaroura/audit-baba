@@ -153,15 +153,27 @@ document.addEventListener("alpine:init", () => {
     },
 
     async _seedDefaultUsers() {
-      if (this.users.length) return;
       const batch = writeBatch(db);
-      const defaults = [
-        { id: "usr-owner",   name: "Owner",   username: "owner",   password: "0000", role: "owner" },
-        { id: "usr-manager", name: "Manager", username: "manager", password: "1111", role: "manager" },
-        { id: "usr-auditor", name: "Auditor", username: "auditor", password: "2222", role: "auditor" },
-      ];
-      for (const u of defaults) batch.set(doc(db, "users", u.id), u);
-      await batch.commit();
+      let hasWrites = false;
+      // Seed SKUs from seed.js if Firestore skus collection is empty
+      if (!this.skus.length && window.SEED_SKUS?.length) {
+        for (const s of window.SEED_SKUS) {
+          const id = s.sku_id || s.id;
+          batch.set(doc(db, "skus", id), clean({ id, sku_id: id, item_name: s.item_name, unit: s.unit || "piece", sale_price: s.sale_price || 0, category: s.category || "Other", active: true, packed: true }));
+        }
+        hasWrites = true;
+      }
+      // Seed default users if none exist
+      if (!this.users.length) {
+        const defaults = [
+          { id: "usr-owner",   name: "Owner",   username: "owner",   password: "0000", role: "owner" },
+          { id: "usr-manager", name: "Manager", username: "manager", password: "1111", role: "manager" },
+          { id: "usr-auditor", name: "Auditor", username: "auditor", password: "2222", role: "auditor" },
+        ];
+        for (const u of defaults) batch.set(doc(db, "users", u.id), u);
+        hasWrites = true;
+      }
+      if (hasWrites) await batch.commit();
     },
 
     _validateSession() {
