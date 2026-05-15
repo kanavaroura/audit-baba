@@ -100,8 +100,26 @@ document.addEventListener("alpine:init", () => {
         onSnapshot(
           collection(db, name),
           (snap) => {
-            this[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            this._onCollectionLoaded(name);
+            if (!this._loadedNames[name]) {
+              // Initial load — replace array once
+              this[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+              this._onCollectionLoaded(name);
+            } else {
+              // Subsequent updates — patch only changed items so Alpine
+              // doesn't re-render the whole list on every keystroke save
+              const arr = this[name];
+              for (const change of snap.docChanges()) {
+                const data = { id: change.doc.id, ...change.doc.data() };
+                const idx = arr.findIndex(x => x.id === data.id);
+                if (change.type === "removed") {
+                  if (idx >= 0) arr.splice(idx, 1);
+                } else if (change.type === "modified") {
+                  if (idx >= 0) arr.splice(idx, 1, data);
+                } else if (change.type === "added") {
+                  if (idx < 0) arr.push(data);
+                }
+              }
+            }
           },
           () => { this._onCollectionLoaded(name); }
         );
@@ -220,6 +238,16 @@ document.addEventListener("alpine:init", () => {
         if (q && !s.item_name.toLowerCase().includes(q) && !s.id.toLowerCase().includes(q)) return false;
         return true;
       });
+    },
+
+    // Reactive getter for the outlet form's excluded-SKU selector.
+    // Using a getter avoids Alpine reactivity issues with inline ternaries
+    // inside nested <template x-if> + <template x-for>.
+    get outletFormSkus() {
+      if (!this.outletDraft) return this.skus;
+      return this.outletDraft.outlet_type === "express_kiosk"
+        ? this.skus.filter(s => s.packed)
+        : this.skus;
     },
 
     activeOutletSkus(outletId) {
@@ -560,9 +588,9 @@ document.addEventListener("alpine:init", () => {
       const auditId = uid("AUD");
       const batch = writeBatch(db);
       batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: si.outlet, audit_date: si.closing_date, period_start: si.period_start, hq_auditor: "", outlet_witness: "", status: "in_progress", signed_off_at: null }));
-      for (const row of si.parsed) {
-        const lineId = uid("AL");
-        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: row.sku_id, opening_qty: row.opening, dispatched_in_period: row.qty_in, sold_in_period: row.qty_out, adjustments_in_period: 0, physical_qty: row.closing, notes: "" }));
+      for (let i = 0; i < si.parsed.length; i++) {
+        const row = si.parsed[i], lineId = uid("AL");
+        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: row.sku_id, opening_qty: row.opening, dispatched_in_period: row.qty_in, sold_in_period: row.qty_out, adjustments_in_period: 0, physical_qty: row.closing, notes: "", sort_order: i }));
       }
       await batch.commit();
       const count = si.parsed.length;
@@ -590,9 +618,9 @@ document.addEventListener("alpine:init", () => {
       const skus = this.activeOutletSkus(d.outlet_id);
       const batch = writeBatch(db);
       batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: d.outlet_id, audit_date: d.audit_date, period_start: d.period_start, hq_auditor: d.hq_auditor, outlet_witness: d.outlet_witness, status: "in_progress", signed_off_at: null }));
-      for (const sku of skus) {
-        const lineId = uid("AL");
-        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: sku.id, opening_qty: this.computeOpening(d.outlet_id, sku.id, d.period_start), dispatched_in_period: this.computeDispatched(d.outlet_id, sku.id, d.period_start, d.audit_date), sold_in_period: this.computeSold(d.outlet_id, sku.id, d.period_start, d.audit_date), adjustments_in_period: this.computeAdjustments(d.outlet_id, sku.id, d.period_start, d.audit_date), physical_qty: null, notes: "" }));
+      for (let i = 0; i < skus.length; i++) {
+        const sku = skus[i], lineId = uid("AL");
+        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: sku.id, opening_qty: this.computeOpening(d.outlet_id, sku.id, d.period_start), dispatched_in_period: this.computeDispatched(d.outlet_id, sku.id, d.period_start, d.audit_date), sold_in_period: this.computeSold(d.outlet_id, sku.id, d.period_start, d.audit_date), adjustments_in_period: this.computeAdjustments(d.outlet_id, sku.id, d.period_start, d.audit_date), physical_qty: null, notes: "", sort_order: i }));
       }
       await batch.commit();
       this.auditDraft = null;
@@ -618,7 +646,7 @@ document.addEventListener("alpine:init", () => {
       return this.adjustments.filter(a => a.outlet_id === outletId && a.sku_id === skuId && a.approved_on >= start && a.approved_on <= end).reduce((s, a) => s + (a.qty || 0), 0);
     },
 
-    auditLineExpected(l) { return l.opening_qty + l.dispatched_in_period - l.sold_in_period - l.adjustments_in_period; },
+    auditLineExpected(l) { return (l.opening_qty || 0) + (l.dispatched_in_period || 0) - (l.sold_in_period || 0) - (l.adjustments_in_period || 0); },
     auditLineVariance(l) {
       if (l.physical_qty === null || l.physical_qty === "" || l.physical_qty === undefined) return null;
       return parseFloat(l.physical_qty) - this.auditLineExpected(l);
@@ -686,12 +714,14 @@ document.addEventListener("alpine:init", () => {
     get filteredCaptureLines() {
       if (!this.auditCaptureId) return [];
       const q = this.auditFilter.trim().toLowerCase();
-      return this.auditLinesFor(this.auditCaptureId).filter(l => {
-        const sku = this.skuById(l.sku_id); if (!sku) return false;
-        if (this.auditCategory && sku.category !== this.auditCategory) return false;
-        if (q && !sku.item_name.toLowerCase().includes(q)) return false;
-        return true;
-      });
+      return this.auditLinesFor(this.auditCaptureId)
+        .filter(l => {
+          const sku = this.skuById(l.sku_id); if (!sku) return false;
+          if (this.auditCategory && sku.category !== this.auditCategory) return false;
+          if (q && !sku.item_name.toLowerCase().includes(q)) return false;
+          return true;
+        })
+        .sort((a, b) => (a.sort_order ?? 99999) - (b.sort_order ?? 99999));
     },
 
     // ---------- export ----------

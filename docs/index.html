@@ -767,7 +767,7 @@
             <div class="md:col-span-2">
               <label class="label">Excluded SKUs <span class="font-normal normal-case text-imliFaint">— this outlet doesn't carry these</span></label>
               <select multiple class="input h-32" x-model="outletDraft.excluded_skus">
-                <template x-for="s in (outletDraft.outlet_type === 'express_kiosk' ? skus.filter(x => x.packed) : skus)" :key="s.id">
+                <template x-for="s in outletFormSkus" :key="s.id">
                   <option :value="s.id" x-text="s.item_name"></option>
                 </template>
               </select>
