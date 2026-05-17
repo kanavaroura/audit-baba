@@ -112,39 +112,47 @@ document.addEventListener("alpine:init", () => {
         }),
         new Promise(r => setTimeout(r, 8000)),
       ]);
+      // Ensure the auth token is fully propagated to the Firestore SDK
+      // before subscribing (cached sessions can have a momentary token lag).
+      try { if (auth.currentUser) await auth.currentUser.getIdToken(); } catch(e) {}
       for (const name of COLLECTIONS) {
-        onSnapshot(
-          collection(db, name),
-          (snap) => {
-            if (!this._loadedNames[name]) {
-              // Initial load — replace array once
-              this[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-              this._onCollectionLoaded(name);
-            } else {
-              // Subsequent updates — patch only changed items so Alpine
-              // doesn't re-render the whole list on every keystroke save
-              const arr = this[name];
-              for (const change of snap.docChanges()) {
-                const data = { id: change.doc.id, ...change.doc.data() };
-                const idx = arr.findIndex(x => x.id === data.id);
-                if (change.type === "removed") {
-                  if (idx >= 0) arr.splice(idx, 1);
-                } else if (change.type === "modified") {
-                  if (idx >= 0) arr.splice(idx, 1, data);
-                } else if (change.type === "added") {
-                  if (idx < 0) arr.push(data);
-                }
-              }
-            }
-          },
-          () => { this._onCollectionLoaded(name); }
-        );
+        this._subscribeCollection(name);
       }
       const h = location.hash.slice(1);
       if (h) this.view = h;
       window.addEventListener("hashchange", () => {
         const nh = location.hash.slice(1);
         if (nh) this.view = nh;
+      });
+    },
+
+    _subscribeCollection(name, isRetry = false) {
+      const applySnap = (snap) => {
+        if (!this._loadedNames[name]) {
+          this[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          this._onCollectionLoaded(name);
+        } else {
+          const arr = this[name];
+          for (const change of snap.docChanges()) {
+            const data = { id: change.doc.id, ...change.doc.data() };
+            const idx = arr.findIndex(x => x.id === data.id);
+            if (change.type === "removed") { if (idx >= 0) arr.splice(idx, 1); }
+            else if (change.type === "modified") { if (idx >= 0) arr.splice(idx, 1, data); }
+            else if (change.type === "added") { if (idx < 0) arr.push(data); }
+          }
+        }
+      };
+      onSnapshot(collection(db, name), applySnap, async () => {
+        if (!isRetry) {
+          // Refresh auth token and retry once
+          try {
+            if (auth.currentUser) await auth.currentUser.getIdToken(true);
+            else await signInAnonymously(auth);
+          } catch(e) {}
+          this._subscribeCollection(name, true);
+        } else {
+          this._onCollectionLoaded(name);
+        }
       });
     },
 
@@ -203,7 +211,7 @@ document.addEventListener("alpine:init", () => {
 
     // ---------- auth ----------
     login() {
-      const user = this.users.find(u => u.username === this.loginUsername.trim() && u.password === this.loginPassword);
+      const user = this.users.find(u => u.username === this.loginUsername.trim() && u.password === this.loginPassword.trim());
       if (!user) { this.loginError = "Wrong username or password."; return; }
       this.currentUserId = user.id;
       localStorage.setItem(SESSION_KEY, user.id);

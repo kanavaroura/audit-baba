@@ -1,4 +1,4 @@
-const CACHE = "audit-baba-v1";
+const CACHE = "audit-baba-v2";
 
 const PRECACHE = [
   "./index.html",
