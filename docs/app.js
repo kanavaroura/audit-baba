@@ -99,15 +99,19 @@ document.addEventListener("alpine:init", () => {
 
     // ---------- init ----------
     async init() {
-      // Wait for Firebase Auth to restore any cached session (instant on repeat
-      // visits); only sign in anonymously if there is no existing user.
-      await new Promise(resolve => {
-        const unsub = auth.onAuthStateChanged(async (user) => {
-          unsub();
-          if (!user) { try { await signInAnonymously(auth); } catch(e) {} }
-          resolve();
-        });
-      });
+      // Restore cached auth session instantly; sign in anonymously only if
+      // no user exists. Hard 8s timeout so a hanging auth call never blocks
+      // the Firestore listener setup.
+      await Promise.race([
+        new Promise(resolve => {
+          const unsub = auth.onAuthStateChanged(async (user) => {
+            unsub();
+            if (!user) { try { await signInAnonymously(auth); } catch(e) {} }
+            resolve();
+          });
+        }),
+        new Promise(r => setTimeout(r, 8000)),
+      ]);
       for (const name of COLLECTIONS) {
         onSnapshot(
           collection(db, name),
@@ -148,10 +152,11 @@ document.addEventListener("alpine:init", () => {
       if (this._loadedNames[name]) return;
       this._loadedNames[name] = true;
       if (Object.keys(this._loadedNames).length < COLLECTIONS.length) return;
-      // All collections loaded — run startup tasks
-      this._runMigrations();
-      await this._seedDefaultUsers();
-      this._validateSession();
+      try {
+        this._runMigrations();
+        await this._seedDefaultUsers();
+        this._validateSession();
+      } catch(e) {}
       this.loading = false;
     },
 
