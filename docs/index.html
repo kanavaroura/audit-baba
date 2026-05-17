@@ -345,7 +345,7 @@
             <div class="display font-bold text-imli text-lg">Shuru karte hain</div>
             <p class="text-sm text-imliSoft mt-1">No data yet. Try the demo seed to see how the app works end-to-end.</p>
             <div class="flex gap-2 flex-wrap mt-3">
-              <button class="btn-primary" @click="loadDemoData()">
+              <button class="btn-primary" @click="loadDemoData()" :disabled="_saving">
                 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                 Load demo data
               </button>
@@ -500,7 +500,7 @@
               <input type="text" class="input" x-model="auditDraft.outlet_witness" placeholder="Outlet manager">
             </div>
             <div class="md:col-span-2 flex gap-3 mt-2">
-              <button class="btn-primary" @click="startAudit()">
+              <button class="btn-primary" @click="startAudit()" :disabled="_saving">
                 Start counting
                 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
               </button>
@@ -607,7 +607,7 @@
                 <option value="">All categories</option>
                 <template x-for="c in categories" :key="c"><option :value="c" x-text="c"></option></template>
               </select>
-              <button x-show="currentCaptureAudit.status==='in_progress'" class="btn-success" @click="submitAudit(auditCaptureId)">
+              <button x-show="currentCaptureAudit.status==='in_progress'" class="btn-success" @click="submitAudit(auditCaptureId)" :disabled="_saving">
                 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                 Submit
               </button>
@@ -718,7 +718,7 @@
               <div class="caption">Running shortfall</div>
               <div class="display font-extrabold text-mirch tabular text-xl leading-none" x-text="fmtINR(Math.abs(currentCaptureTotals.shortfall))"></div>
             </div>
-            <button class="btn-success" @click="submitAudit(auditCaptureId)">
+            <button class="btn-success" @click="submitAudit(auditCaptureId)" :disabled="_saving">
               <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
               Submit audit
             </button>
@@ -966,7 +966,7 @@
         <template x-if="skuImport.parsed">
           <div class="mt-3 flex items-center gap-4 flex-wrap">
             <span class="text-sm text-imliSoft"><span class="font-bold text-imli" x-text="skuImport.parsed?.length"></span> rows parsed</span>
-            <button class="btn-primary !py-1.5 !px-4 text-sm" @click="confirmSkuImport()">Import</button>
+            <button class="btn-primary !py-1.5 !px-4 text-sm" @click="confirmSkuImport()" :disabled="_saving">Import</button>
           </div>
         </template>
         <div x-show="skuImport.added || skuImport.skipped" class="mt-2 text-xs text-aamDark font-semibold">
@@ -1099,7 +1099,7 @@
                   <span x-text="stockImport.unmatched.length"></span> unmatched (skipped).
                 </span>
               </div>
-              <button class="btn-primary" @click="confirmStockImport()">
+              <button class="btn-primary" @click="confirmStockImport()" :disabled="_saving">
                 <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
                 Import &amp; open audit
               </button>
@@ -1195,7 +1195,7 @@
         <div class="display font-bold text-imli text-lg mb-2">Storage</div>
         <p class="text-sm text-imliSoft mb-4">Data is stored in your browser's local storage. It stays on this device. Use Export to back up.</p>
         <div class="flex gap-3 flex-wrap">
-          <button class="btn-secondary" @click="loadDemoData()">
+          <button class="btn-secondary" @click="loadDemoData()" :disabled="_saving">
             <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             Load demo data
           </button>
@@ -1208,7 +1208,7 @@
             <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             Export JSON
           </button>
-          <button class="btn-danger" @click="resetAll()">
+          <button class="btn-danger" @click="resetAll()" :disabled="_saving">
             <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
             Wipe all data
           </button>

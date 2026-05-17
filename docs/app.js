@@ -5,6 +5,7 @@ import {
   getFirestore, collection, doc,
   onSnapshot, setDoc, deleteDoc, writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIQ4RF4T4Nq-DTPJ04BpXbYG9Py68Deto",
@@ -17,6 +18,7 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
+const auth = getAuth(fbApp);
 
 const SESSION_KEY = "currentUserId";
 const COLLECTIONS = ["skus","outlets","dispatches","dispatchLines","posImports","posLines","audits","auditLines","adjustments","users"];
@@ -43,6 +45,7 @@ document.addEventListener("alpine:init", () => {
     // ---------- loading ----------
     loading: true,
     _loadedNames: {},
+    _saving: false,
 
     // ---------- UI state ----------
     view: "dashboard",
@@ -95,7 +98,8 @@ document.addEventListener("alpine:init", () => {
     get currentRole() { return this.currentUser?.role || null; },
 
     // ---------- init ----------
-    init() {
+    async init() {
+      try { await signInAnonymously(auth); } catch(e) {}
       for (const name of COLLECTIONS) {
         onSnapshot(
           collection(db, name),
@@ -332,19 +336,25 @@ document.addEventListener("alpine:init", () => {
     },
     async confirmSkuImport() {
       if (!this.skuImport.parsed?.length) return;
-      const existing = new Set(this.skus.map(s => s.item_name.toLowerCase()));
-      const batch = writeBatch(db);
-      let added = 0, skipped = 0;
-      for (const row of this.skuImport.parsed) {
-        if (existing.has(row.item_name.toLowerCase())) { skipped++; continue; }
-        const id = uid("SKU");
-        batch.set(doc(db, "skus", id), { id, sku_id: id, item_name: row.item_name, unit: row.unit, sale_price: row.sale_price, category: row.category, active: true, packed: true });
-        existing.add(row.item_name.toLowerCase());
-        added++;
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const existing = new Set(this.skus.map(s => s.item_name.toLowerCase()));
+        const batch = writeBatch(db);
+        let added = 0, skipped = 0;
+        for (const row of this.skuImport.parsed) {
+          if (existing.has(row.item_name.toLowerCase())) { skipped++; continue; }
+          const id = uid("SKU");
+          batch.set(doc(db, "skus", id), { id, sku_id: id, item_name: row.item_name, unit: row.unit, sale_price: row.sale_price, category: row.category, active: true, packed: true });
+          existing.add(row.item_name.toLowerCase());
+          added++;
+        }
+        await batch.commit();
+        this.skuImport = { parsed: null, error: "", added, skipped };
+        this.notify(`${added} SKUs added, ${skipped} duplicates skipped`);
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      this.skuImport = { parsed: null, error: "", added, skipped };
-      this.notify(`${added} SKUs added, ${skipped} duplicates skipped`);
     },
 
     // ---------- SKUs ----------
@@ -478,34 +488,46 @@ document.addEventListener("alpine:init", () => {
       for (const ln of d.lines) {
         if (!ln.sku_id || ln.qty_dispatched <= 0) { this.notify("Each line needs SKU and qty > 0"); return; }
       }
-      d.status = status;
-      const batch = writeBatch(db);
-      if (!d.id) {
-        d.id = uid("DSP");
-        batch.set(doc(db, "dispatches", d.id), clean({ id: d.id, outlet_id: d.outlet_id, dispatched_on: d.dispatched_on, dispatched_by: d.dispatched_by, status: d.status, received_on: null, received_by: "" }));
-        for (const ln of d.lines) {
-          batch.set(doc(db, "dispatchLines", ln.id), clean({ id: ln.id, dispatch_id: d.id, sku_id: ln.sku_id, qty_dispatched: ln.qty_dispatched, qty_received: ln.qty_received }));
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        d.status = status;
+        const batch = writeBatch(db);
+        if (!d.id) {
+          d.id = uid("DSP");
+          batch.set(doc(db, "dispatches", d.id), clean({ id: d.id, outlet_id: d.outlet_id, dispatched_on: d.dispatched_on, dispatched_by: d.dispatched_by, status: d.status, received_on: null, received_by: "" }));
+          for (const ln of d.lines) {
+            batch.set(doc(db, "dispatchLines", ln.id), clean({ id: ln.id, dispatch_id: d.id, sku_id: ln.sku_id, qty_dispatched: ln.qty_dispatched, qty_received: ln.qty_received }));
+          }
+        } else {
+          batch.update(doc(db, "dispatches", d.id), { status: d.status });
         }
-      } else {
-        batch.update(doc(db, "dispatches", d.id), { status: d.status });
+        await batch.commit();
+        this.dispatchDraft = null;
+        this.notify(status === "draft" ? "Saved as draft" : "Dispatch sent");
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      this.dispatchDraft = null;
-      this.notify(status === "draft" ? "Saved as draft" : "Dispatch sent");
     },
     openAckDispatch(id) {
       this._ackLines = this.dispatchLines.filter(l => l.dispatch_id === id).map(l => ({ ...l, qty_received: l.qty_received ?? l.qty_dispatched }));
       this.dispatchAckId = id;
     },
     async confirmAckDispatch() {
-      const batch = writeBatch(db);
-      batch.update(doc(db, "dispatches", this.dispatchAckId), { status: "received", received_on: todayISO() });
-      for (const ln of this._ackLines) {
-        batch.update(doc(db, "dispatchLines", ln.id), { qty_received: ln.qty_received });
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const batch = writeBatch(db);
+        batch.update(doc(db, "dispatches", this.dispatchAckId), { status: "received", received_on: todayISO() });
+        for (const ln of this._ackLines) {
+          batch.update(doc(db, "dispatchLines", ln.id), { qty_received: ln.qty_received });
+        }
+        await batch.commit();
+        this.dispatchAckId = null;
+        this.notify("Receipt confirmed");
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      this.dispatchAckId = null;
-      this.notify("Receipt confirmed");
     },
     dispatchLinesFor(id) { return this.dispatchLines.filter(l => l.dispatch_id === id); },
 
@@ -538,16 +560,22 @@ document.addEventListener("alpine:init", () => {
     async confirmPosImport() {
       const u = this.posUpload;
       if (!u.outlet || !u.period_start || !u.period_end || !u.parsed?.length) { this.notify("Fill outlet, period, and upload a valid CSV"); return; }
-      const importId = uid("PIM");
-      const batch = writeBatch(db);
-      batch.set(doc(db, "posImports", importId), clean({ id: importId, outlet_id: u.outlet, period_start: u.period_start, period_end: u.period_end, uploaded_on: new Date().toISOString(), line_count: u.parsed.length }));
-      for (const p of u.parsed) {
-        const id = uid("PL");
-        batch.set(doc(db, "posLines", id), clean({ id, pos_import_id: importId, sku_id: p.sku_id, qty_sold: p.qty_sold, revenue: p.revenue }));
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const importId = uid("PIM");
+        const batch = writeBatch(db);
+        batch.set(doc(db, "posImports", importId), clean({ id: importId, outlet_id: u.outlet, period_start: u.period_start, period_end: u.period_end, uploaded_on: new Date().toISOString(), line_count: u.parsed.length }));
+        for (const p of u.parsed) {
+          const id = uid("PL");
+          batch.set(doc(db, "posLines", id), clean({ id, pos_import_id: importId, sku_id: p.sku_id, qty_sold: p.qty_sold, revenue: p.revenue }));
+        }
+        await batch.commit();
+        Object.assign(this.posUpload, { outlet: "", period_start: "", period_end: "", parsed: null, error: "", unmatched: [] });
+        this.notify("POS data imported");
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      Object.assign(this.posUpload, { outlet: "", period_start: "", period_end: "", parsed: null, error: "", unmatched: [] });
-      this.notify("POS data imported");
     },
 
     // ---------- STOCK IMPORT ----------
@@ -585,19 +613,25 @@ document.addEventListener("alpine:init", () => {
     async confirmStockImport() {
       const si = this.stockImport;
       if (!si.outlet || !si.closing_date || !si.period_start || !si.parsed?.length) { this.notify("Fill outlet, period start, closing date, and upload a valid CSV"); return; }
-      const auditId = uid("AUD");
-      const batch = writeBatch(db);
-      batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: si.outlet, audit_date: si.closing_date, period_start: si.period_start, hq_auditor: "", outlet_witness: "", status: "in_progress", signed_off_at: null }));
-      for (let i = 0; i < si.parsed.length; i++) {
-        const row = si.parsed[i], lineId = uid("AL");
-        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: row.sku_id, opening_qty: row.opening, dispatched_in_period: row.qty_in, sold_in_period: row.qty_out, adjustments_in_period: 0, physical_qty: row.closing, notes: "", sort_order: i }));
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const auditId = uid("AUD");
+        const batch = writeBatch(db);
+        batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: si.outlet, audit_date: si.closing_date, period_start: si.period_start, hq_auditor: "", outlet_witness: "", status: "in_progress", signed_off_at: null }));
+        for (let i = 0; i < si.parsed.length; i++) {
+          const row = si.parsed[i], lineId = uid("AL");
+          batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: row.sku_id, opening_qty: row.opening, dispatched_in_period: row.qty_in, sold_in_period: row.qty_out, adjustments_in_period: 0, physical_qty: row.closing, notes: "", sort_order: i }));
+        }
+        await batch.commit();
+        const count = si.parsed.length;
+        Object.assign(this.stockImport, { outlet: "", period_start: "", closing_date: "", parsed: null, error: "", unmatched: [] });
+        this.auditCaptureId = auditId;
+        this.go("audit-capture");
+        this.notify(`Audit ready: ${count} SKUs pre-filled from CSV`);
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      const count = si.parsed.length;
-      Object.assign(this.stockImport, { outlet: "", period_start: "", closing_date: "", parsed: null, error: "", unmatched: [] });
-      this.auditCaptureId = auditId;
-      this.go("audit-capture");
-      this.notify(`Audit ready: ${count} SKUs pre-filled from CSV`);
     },
 
     // ---------- AUDITS ----------
@@ -614,19 +648,25 @@ document.addEventListener("alpine:init", () => {
     async startAudit() {
       const d = this.auditDraft;
       if (!d.outlet_id || !d.audit_date || !d.period_start) { this.notify("Fill all fields"); return; }
-      const auditId = uid("AUD");
-      const skus = this.activeOutletSkus(d.outlet_id);
-      const batch = writeBatch(db);
-      batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: d.outlet_id, audit_date: d.audit_date, period_start: d.period_start, hq_auditor: d.hq_auditor, outlet_witness: d.outlet_witness, status: "in_progress", signed_off_at: null }));
-      for (let i = 0; i < skus.length; i++) {
-        const sku = skus[i], lineId = uid("AL");
-        batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: sku.id, opening_qty: this.computeOpening(d.outlet_id, sku.id, d.period_start), dispatched_in_period: this.computeDispatched(d.outlet_id, sku.id, d.period_start, d.audit_date), sold_in_period: this.computeSold(d.outlet_id, sku.id, d.period_start, d.audit_date), adjustments_in_period: this.computeAdjustments(d.outlet_id, sku.id, d.period_start, d.audit_date), physical_qty: null, notes: "", sort_order: i }));
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const auditId = uid("AUD");
+        const skus = this.activeOutletSkus(d.outlet_id);
+        const batch = writeBatch(db);
+        batch.set(doc(db, "audits", auditId), clean({ id: auditId, outlet_id: d.outlet_id, audit_date: d.audit_date, period_start: d.period_start, hq_auditor: d.hq_auditor, outlet_witness: d.outlet_witness, status: "in_progress", signed_off_at: null }));
+        for (let i = 0; i < skus.length; i++) {
+          const sku = skus[i], lineId = uid("AL");
+          batch.set(doc(db, "auditLines", lineId), clean({ id: lineId, audit_id: auditId, sku_id: sku.id, opening_qty: this.computeOpening(d.outlet_id, sku.id, d.period_start), dispatched_in_period: this.computeDispatched(d.outlet_id, sku.id, d.period_start, d.audit_date), sold_in_period: this.computeSold(d.outlet_id, sku.id, d.period_start, d.audit_date), adjustments_in_period: this.computeAdjustments(d.outlet_id, sku.id, d.period_start, d.audit_date), physical_qty: null, notes: "", sort_order: i }));
+        }
+        await batch.commit();
+        this.auditDraft = null;
+        this.auditCaptureId = auditId;
+        this.go("audit-capture");
+        this.notify(`Audit ready: ${skus.length} SKUs to count`);
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      this.auditDraft = null;
-      this.auditCaptureId = auditId;
-      this.go("audit-capture");
-      this.notify(`Audit ready: ${skus.length} SKUs to count`);
     },
 
     computeOpening(outletId, skuId, periodStart) {
@@ -681,17 +721,23 @@ document.addEventListener("alpine:init", () => {
     },
 
     async submitAudit(auditId) {
+      if (this._saving) return;
       const lines = this.auditLinesFor(auditId);
       const uncounted = lines.filter(l => l.physical_qty === null || l.physical_qty === "" || l.physical_qty === undefined);
-      const batch = writeBatch(db);
       if (uncounted.length) {
         if (!confirm(`${uncounted.length} SKUs not counted. Treat them as 0 and submit anyway?`)) return;
-        for (const l of uncounted) batch.update(doc(db, "auditLines", l.id), { physical_qty: 0 });
       }
-      batch.update(doc(db, "audits", auditId), { status: "submitted", signed_off_at: new Date().toISOString() });
-      await batch.commit();
-      this.notify("Audit submitted");
-      this.go("audits");
+      this._saving = true;
+      try {
+        const batch = writeBatch(db);
+        for (const l of uncounted) batch.update(doc(db, "auditLines", l.id), { physical_qty: 0 });
+        batch.update(doc(db, "audits", auditId), { status: "submitted", signed_off_at: new Date().toISOString() });
+        await batch.commit();
+        this.notify("Audit submitted");
+        this.go("audits");
+      } finally {
+        this._saving = false;
+      }
     },
 
     finalizeAudit(auditId) {
@@ -705,10 +751,16 @@ document.addEventListener("alpine:init", () => {
     },
     async deleteAudit(auditId) {
       if (!confirm("Delete this audit and all its lines?")) return;
-      const batch = writeBatch(db);
-      batch.delete(doc(db, "audits", auditId));
-      for (const l of this.auditLines.filter(l => l.audit_id === auditId)) batch.delete(doc(db, "auditLines", l.id));
-      await batch.commit();
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "audits", auditId));
+        for (const l of this.auditLines.filter(l => l.audit_id === auditId)) batch.delete(doc(db, "auditLines", l.id));
+        await batch.commit();
+      } finally {
+        this._saving = false;
+      }
     },
 
     get filteredCaptureLines() {
@@ -756,44 +808,56 @@ document.addEventListener("alpine:init", () => {
     // ---------- danger ----------
     async resetAll() {
       if (!confirm("Wipe ALL data from Firestore? This cannot be undone.")) return;
-      const batch = writeBatch(db);
-      for (const name of COLLECTIONS) {
-        for (const item of this[name]) batch.delete(doc(db, name, item.id));
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const batch = writeBatch(db);
+        for (const name of COLLECTIONS) {
+          for (const item of this[name]) batch.delete(doc(db, name, item.id));
+        }
+        await batch.commit();
+        localStorage.removeItem(SESSION_KEY);
+        location.reload();
+      } finally {
+        this._saving = false;
       }
-      await batch.commit();
-      localStorage.removeItem(SESSION_KEY);
-      location.reload();
     },
 
     // ---------- demo seed ----------
     async loadDemoData() {
       if (this.outlets.length && !confirm("Add demo outlets/dispatches/POS/audit on top of existing data?")) return;
-      const o1 = { id: uid("OUT"), name: "Outlet A — Connaught Place", location: "Delhi", manager_name: "Rahul", manager_phone: "9810000001", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
-      const o2 = { id: uid("OUT"), name: "Outlet B — Saket", location: "Delhi", manager_name: "Priya", manager_phone: "9810000002", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
-      const o3 = { id: uid("OUT"), name: "Outlet C — Gurgaon", location: "Gurgaon", manager_name: "Amit", manager_phone: "9810000003", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
-      const pickedSkus = this.skus.filter(s => s.sale_price > 0).slice(0, 8);
-      const b1 = writeBatch(db);
-      for (const o of [o1, o2, o3]) {
-        b1.set(doc(db, "outlets", o.id), clean(o));
-        const dispId = uid("DSP");
-        b1.set(doc(db, "dispatches", dispId), clean({ id: dispId, outlet_id: o.id, dispatched_on: "2026-04-02", dispatched_by: "Godown", status: "received", received_on: "2026-04-03", received_by: o.manager_name }));
-        for (const sku of pickedSkus) {
-          const qty = Math.floor(Math.random() * 30) + 10, dlId = uid("DL");
-          b1.set(doc(db, "dispatchLines", dlId), { id: dlId, dispatch_id: dispId, sku_id: sku.id, qty_dispatched: qty, qty_received: qty });
+      if (this._saving) return;
+      this._saving = true;
+      try {
+        const o1 = { id: uid("OUT"), name: "Outlet A — Connaught Place", location: "Delhi", manager_name: "Rahul", manager_phone: "9810000001", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
+        const o2 = { id: uid("OUT"), name: "Outlet B — Saket", location: "Delhi", manager_name: "Priya", manager_phone: "9810000002", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
+        const o3 = { id: uid("OUT"), name: "Outlet C — Gurgaon", location: "Gurgaon", manager_name: "Amit", manager_phone: "9810000003", status: "active", outlet_type: "regular", started_on: "2026-01-01", excluded_skus: [] };
+        const pickedSkus = this.skus.filter(s => s.sale_price > 0).slice(0, 8);
+        const b1 = writeBatch(db);
+        for (const o of [o1, o2, o3]) {
+          b1.set(doc(db, "outlets", o.id), clean(o));
+          const dispId = uid("DSP");
+          b1.set(doc(db, "dispatches", dispId), clean({ id: dispId, outlet_id: o.id, dispatched_on: "2026-04-02", dispatched_by: "Godown", status: "received", received_on: "2026-04-03", received_by: o.manager_name }));
+          for (const sku of pickedSkus) {
+            const qty = Math.floor(Math.random() * 30) + 10, dlId = uid("DL");
+            b1.set(doc(db, "dispatchLines", dlId), { id: dlId, dispatch_id: dispId, sku_id: sku.id, qty_dispatched: qty, qty_received: qty });
+          }
         }
-      }
-      await b1.commit();
-      const b2 = writeBatch(db);
-      for (const o of [o1, o2, o3]) {
-        const importId = uid("PIM");
-        b2.set(doc(db, "posImports", importId), clean({ id: importId, outlet_id: o.id, period_start: "2026-04-03", period_end: "2026-04-27", uploaded_on: new Date().toISOString(), line_count: pickedSkus.length }));
-        for (const sku of pickedSkus) {
-          const sold = Math.floor(5 + Math.random() * 15), plId = uid("PL");
-          b2.set(doc(db, "posLines", plId), { id: plId, pos_import_id: importId, sku_id: sku.id, qty_sold: sold, revenue: sold * sku.sale_price });
+        await b1.commit();
+        const b2 = writeBatch(db);
+        for (const o of [o1, o2, o3]) {
+          const importId = uid("PIM");
+          b2.set(doc(db, "posImports", importId), clean({ id: importId, outlet_id: o.id, period_start: "2026-04-03", period_end: "2026-04-27", uploaded_on: new Date().toISOString(), line_count: pickedSkus.length }));
+          for (const sku of pickedSkus) {
+            const sold = Math.floor(5 + Math.random() * 15), plId = uid("PL");
+            b2.set(doc(db, "posLines", plId), { id: plId, pos_import_id: importId, sku_id: sku.id, qty_sold: sold, revenue: sold * sku.sale_price });
+          }
         }
+        await b2.commit();
+        this.notify("Demo data loaded — go to Audits and start one");
+      } finally {
+        this._saving = false;
       }
-      await b2.commit();
-      this.notify("Demo data loaded — go to Audits and start one");
     },
 
   }));
