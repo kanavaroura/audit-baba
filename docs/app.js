@@ -5,7 +5,6 @@ import {
   getFirestore, collection, doc,
   onSnapshot, setDoc, deleteDoc, writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBIQ4RF4T4Nq-DTPJ04BpXbYG9Py68Deto",
@@ -18,7 +17,6 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
-const auth = getAuth(fbApp);
 
 const SESSION_KEY = "currentUserId";
 const COLLECTIONS = ["skus","outlets","dispatches","dispatchLines","posImports","posLines","audits","auditLines","adjustments","users"];
@@ -98,23 +96,7 @@ document.addEventListener("alpine:init", () => {
     get currentRole() { return this.currentUser?.role || null; },
 
     // ---------- init ----------
-    async init() {
-      // Restore cached auth session instantly; sign in anonymously only if
-      // no user exists. Hard 8s timeout so a hanging auth call never blocks
-      // the Firestore listener setup.
-      await Promise.race([
-        new Promise(resolve => {
-          const unsub = auth.onAuthStateChanged(async (user) => {
-            unsub();
-            if (!user) { try { await signInAnonymously(auth); } catch(e) {} }
-            resolve();
-          });
-        }),
-        new Promise(r => setTimeout(r, 8000)),
-      ]);
-      // Ensure the auth token is fully propagated to the Firestore SDK
-      // before subscribing (cached sessions can have a momentary token lag).
-      try { if (auth.currentUser) await auth.currentUser.getIdToken(); } catch(e) {}
+    init() {
       for (const name of COLLECTIONS) {
         this._subscribeCollection(name);
       }
@@ -126,7 +108,7 @@ document.addEventListener("alpine:init", () => {
       });
     },
 
-    _subscribeCollection(name, isRetry = false) {
+    _subscribeCollection(name) {
       const applySnap = (snap) => {
         if (!this._loadedNames[name]) {
           this[name] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -142,17 +124,8 @@ document.addEventListener("alpine:init", () => {
           }
         }
       };
-      onSnapshot(collection(db, name), applySnap, async () => {
-        if (!isRetry) {
-          // Refresh auth token and retry once
-          try {
-            if (auth.currentUser) await auth.currentUser.getIdToken(true);
-            else await signInAnonymously(auth);
-          } catch(e) {}
-          this._subscribeCollection(name, true);
-        } else {
-          this._onCollectionLoaded(name);
-        }
+      onSnapshot(collection(db, name), applySnap, () => {
+        this._onCollectionLoaded(name);
       });
     },
 
@@ -360,12 +333,6 @@ document.addEventListener("alpine:init", () => {
       if (this._saving) return;
       this._saving = true;
       try {
-        // Ensure we have a valid auth token before writing
-        if (!auth.currentUser) { try { await signInAnonymously(auth); } catch(e) {} }
-        if (!auth.currentUser) {
-          this.skuImport.error = "Not signed in — please refresh the page and try again";
-          return;
-        }
         const existing = new Set(this.skus.map(s => s.item_name.toLowerCase()));
         const batch = writeBatch(db);
         let added = 0, skipped = 0;
