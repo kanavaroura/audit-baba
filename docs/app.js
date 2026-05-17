@@ -2,7 +2,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
 import {
-  getFirestore, collection, doc,
+  getFirestore, collection, doc, getDocs,
   onSnapshot, setDoc, deleteDoc, writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
@@ -817,18 +817,20 @@ document.addEventListener("alpine:init", () => {
       if (this._saving) return;
       this._saving = true;
       try {
-        const allRefs = [];
+        // Query Firestore directly — don't rely on in-memory arrays
         for (const name of COLLECTIONS) {
-          for (const item of this[name]) allRefs.push(doc(db, name, item.id));
-        }
-        // Firestore batch limit is 500 — chunk deletes
-        for (let i = 0; i < allRefs.length; i += 500) {
-          const batch = writeBatch(db);
-          for (const ref of allRefs.slice(i, i + 500)) batch.delete(ref);
-          await batch.commit();
+          const snap = await getDocs(collection(db, name));
+          const refs = snap.docs.map(d => d.ref);
+          for (let i = 0; i < refs.length; i += 500) {
+            const batch = writeBatch(db);
+            refs.slice(i, i + 500).forEach(ref => batch.delete(ref));
+            await batch.commit();
+          }
         }
         localStorage.removeItem(SESSION_KEY);
         location.reload();
+      } catch(e) {
+        this.notify("Wipe failed: " + (e.message || e.code || "unknown error"));
       } finally {
         this._saving = false;
       }
