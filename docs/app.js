@@ -360,6 +360,12 @@ document.addEventListener("alpine:init", () => {
       if (this._saving) return;
       this._saving = true;
       try {
+        // Ensure we have a valid auth token before writing
+        if (!auth.currentUser) { try { await signInAnonymously(auth); } catch(e) {} }
+        if (!auth.currentUser) {
+          this.skuImport.error = "Not signed in — please refresh the page and try again";
+          return;
+        }
         const existing = new Set(this.skus.map(s => s.item_name.toLowerCase()));
         const batch = writeBatch(db);
         let added = 0, skipped = 0;
@@ -370,9 +376,15 @@ document.addEventListener("alpine:init", () => {
           existing.add(row.item_name.toLowerCase());
           added++;
         }
+        if (added === 0) {
+          this.skuImport.error = skipped ? `All ${skipped} items already exist — no new SKUs added` : "No valid rows found in CSV";
+          return;
+        }
         await batch.commit();
         this.skuImport = { parsed: null, error: "", added, skipped };
-        this.notify(`${added} SKUs added, ${skipped} duplicates skipped`);
+        this.notify(`${added} SKUs added${skipped ? `, ${skipped} duplicates skipped` : ""}`);
+      } catch(e) {
+        this.skuImport.error = "Save failed: " + (e.message || e.code || "unknown error");
       } finally {
         this._saving = false;
       }
