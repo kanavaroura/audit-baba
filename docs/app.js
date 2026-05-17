@@ -5,8 +5,6 @@ import {
   getFirestore, collection, doc, getDocs,
   onSnapshot, setDoc, deleteDoc, writeBatch,
 } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBIQ4RF4T4Nq-DTPJ04BpXbYG9Py68Deto",
   authDomain: "audit-baba.firebaseapp.com",
@@ -18,11 +16,6 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp);
-
-// Fire-and-forget: start anonymous auth immediately at page load.
-// By the time a user logs in and tries to write anything, auth will
-// have finished — no blocking, no hanging.
-signInAnonymously(getAuth(fbApp)).catch(() => {});
 
 const SESSION_KEY = "currentUserId";
 const COLLECTIONS = ["skus","outlets","dispatches","dispatchLines","posImports","posLines","audits","auditLines","adjustments","users"];
