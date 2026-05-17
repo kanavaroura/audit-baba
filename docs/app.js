@@ -99,7 +99,15 @@ document.addEventListener("alpine:init", () => {
 
     // ---------- init ----------
     async init() {
-      try { await signInAnonymously(auth); } catch(e) {}
+      // Wait for Firebase Auth to restore any cached session (instant on repeat
+      // visits); only sign in anonymously if there is no existing user.
+      await new Promise(resolve => {
+        const unsub = auth.onAuthStateChanged(async (user) => {
+          unsub();
+          if (!user) { try { await signInAnonymously(auth); } catch(e) {} }
+          resolve();
+        });
+      });
       for (const name of COLLECTIONS) {
         onSnapshot(
           collection(db, name),
