@@ -817,11 +817,16 @@ document.addEventListener("alpine:init", () => {
       if (this._saving) return;
       this._saving = true;
       try {
-        const batch = writeBatch(db);
+        const allRefs = [];
         for (const name of COLLECTIONS) {
-          for (const item of this[name]) batch.delete(doc(db, name, item.id));
+          for (const item of this[name]) allRefs.push(doc(db, name, item.id));
         }
-        await batch.commit();
+        // Firestore batch limit is 500 — chunk deletes
+        for (let i = 0; i < allRefs.length; i += 500) {
+          const batch = writeBatch(db);
+          for (const ref of allRefs.slice(i, i + 500)) batch.delete(ref);
+          await batch.commit();
+        }
         localStorage.removeItem(SESSION_KEY);
         location.reload();
       } finally {
